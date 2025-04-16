@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import BackButton from "../components/BackButton";
 
 export default function Signup() {
     const [email, setEmail] = useState("");
@@ -13,26 +14,38 @@ export default function Signup() {
     const confirmRef = useRef();
     const birthRef = useRef();
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const isEmailValid = emailRegex.test(email);
     const isPasswordValid =
         password.length >= 8 &&
         /[A-Za-z]/.test(password) &&
         /[0-9]/.test(password);
-
     const isPasswordMatch = password === confirm;
 
-    const isFormValid = email && password && confirm && birth && isPasswordValid && isPasswordMatch;
+    const isFormValid =
+        email &&
+        isEmailValid &&
+        password &&
+        confirm &&
+        birth &&
+        isPasswordValid &&
+        isPasswordMatch;
 
     const handleSignup = () => {
         if (!email) return emailRef.current.focus();
+        if (!isEmailValid) return emailRef.current.focus();
         if (!password || !isPasswordValid) return passwordRef.current.focus();
         if (!confirm || !isPasswordMatch) return confirmRef.current.focus();
         if (!birth) return birthRef.current.focus();
 
         alert("회원가입 완료!");
+        // 👉 이후 백엔드로 Axios 전송 예정
     };
 
     return (
-        <div className="flex flex-col items-center justify-center h-auto py-10 px-4 space-y-4">
+        <div className="flex flex-col items-center justify-center h-auto py-10 px-4 space-y-4 relative">
+            <BackButton />
+
             <div className="border-4 border-black rounded-full px-8 py-4 text-4xl font-black mb-6">
                 LevelUpFit
             </div>
@@ -50,6 +63,9 @@ export default function Signup() {
                     />
                     <button className="bg-black text-white px-3 py-2 rounded">중복확인</button>
                 </div>
+                {!isEmailValid && email && (
+                    <p className="text-sm text-red-500">이메일 형식이 올바르지 않습니다.</p>
+                )}
 
                 {/* 비밀번호 */}
                 <div>
@@ -61,7 +77,7 @@ export default function Signup() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
-                    {password && !isPasswordValid && (
+                    {!isPasswordValid && password && (
                         <p className="text-sm text-red-500 mt-1">
                             비밀번호는 8자 이상, 숫자와 문자를 포함해야 합니다.
                         </p>
@@ -87,11 +103,23 @@ export default function Signup() {
                 <div>
                     <div className="mb-1 font-semibold">성별</div>
                     <label className="mr-4">
-                        <input type="radio" name="gender" value="male" checked={gender === "male"} onChange={() => setGender("male")} />
+                        <input
+                            type="radio"
+                            name="gender"
+                            value="male"
+                            checked={gender === "male"}
+                            onChange={() => setGender("male")}
+                        />
                         <span className="ml-1">남성</span>
                     </label>
                     <label>
-                        <input type="radio" name="gender" value="female" checked={gender === "female"} onChange={() => setGender("female")} />
+                        <input
+                            type="radio"
+                            name="gender"
+                            value="female"
+                            checked={gender === "female"}
+                            onChange={() => setGender("female")}
+                        />
                         <span className="ml-1">여성</span>
                     </label>
                 </div>
@@ -105,7 +133,9 @@ export default function Signup() {
                         className="w-full px-4 py-2 border rounded"
                         value={birth}
                         onChange={(e) => setBirth(e.target.value)}
+                        max={new Date().toISOString().split("T")[0]} // 오늘 날짜까지만 입력 가능
                     />
+
                 </div>
 
                 {/* 운동 경험 */}
@@ -120,7 +150,9 @@ export default function Signup() {
                                 checked={level === lv}
                                 onChange={() => setLevel(lv)}
                             />
-                            <span className="ml-1">{lv === "high" ? "상급" : lv === "mid" ? "중급" : "초급"}</span>
+                            <span className="ml-1">
+                {lv === "high" ? "상급" : lv === "mid" ? "중급" : "초급"}
+              </span>
                         </label>
                     ))}
                 </div>
