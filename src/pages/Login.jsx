@@ -1,21 +1,40 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import useUserStore from "../stores/userStore";
 import BackButton from "../components/BackButton";
 
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [remember, setRemember] = useState(false);
+    const setUser = useUserStore((state) => state.setUser);
+    const navigate = useNavigate();
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const isValidEmail = emailRegex.test(email);
+    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     const isFilled = email && password && isValidEmail;
 
-    const handleLogin = () => {
-        if (!isValidEmail) {
-            alert("올바른 이메일 형식을 입력해주세요.");
-            return;
-        }
+    const handleLogin = async () => {
+        if (!isValidEmail) return alert("이메일 형식 확인!");
 
-        alert("로그인 시도!");
+        try {
+            const res = await fetch("http://localhost:8080/api/signin", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    userId: email,
+                    pwd: password,
+                }),
+            });
+
+            if (!res.ok) return alert("로그인 실패");
+
+            const userInfo = await res.json();
+            setUser(userInfo); // Zustand + localStorage 저장
+            alert("로그인 성공!");
+            navigate("/home");
+        } catch (err) {
+            alert("서버 오류");
+        }
     };
 
     return (
@@ -55,6 +74,13 @@ export default function Login() {
             >
                 로그인
             </button>
+
+            <a
+                href="http://localhost:8080/oauth2/authorization/kakao"
+                className="w-full max-w-md bg-yellow-300 text-black py-3 text-center rounded font-semibold"
+            >
+                카카오 로그인
+            </a>
         </div>
     );
 }
