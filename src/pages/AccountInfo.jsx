@@ -7,7 +7,7 @@ export default function AccountInfo() {
     return (
         <Layout>
             {/* 내 계정 정보 */}
-            <div className="text-left px-6"> {/* ← 좌우 여백 추가 */}
+            <div className="text-left pt-5 px-6"> {/* ← 좌우 여백 추가 */}
                 <h2 className="text-2xl font-bold mb-4">내 계정</h2>
                 <div className="space-y-2 font-semibold">
                     <div className="flex justify-between">
