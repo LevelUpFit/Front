@@ -1,14 +1,17 @@
 // src/pages/Welcome.jsx
 import { useNavigate } from "react-router-dom";
+import logo from "../assets/logo.png";
 
 export default function Welcome() {
     const navigate = useNavigate();
 
     return (
         <div className="flex flex-col items-center justify-center h-screen space-y-6 px-4">
-            <div className="border-4 border-black rounded-full px-8 py-4 text-4xl font-black">
-                LevelUpFit
-            </div>
+            <img
+                src={logo}
+                alt="LevelUpFit"
+                className="w-4/5 max-w-xs object-contain"
+            />
 
             <button
                 onClick={() => navigate("/login")}
@@ -22,7 +25,8 @@ export default function Welcome() {
             >
                 회원가입
             </button>
-            <button className="w-full max-w-md bg-yellow-400 py-4 text-lg font-semibold flex items-center justify-center space-x-2">
+            <button
+                className="w-full max-w-md bg-yellow-400 py-4 text-lg font-semibold flex items-center justify-center space-x-2">
                 <span>💬</span>
                 <span>카카오 로그인</span>
             </button>

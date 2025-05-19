@@ -1,19 +1,25 @@
+import useUserStore from "../stores/userStore";
+
 export default function FeedbackPage() {
-    const feedbackData = {
-        feedback: "팔을 완전히 펴지 않았어요. 자세를 교정하세요.",
-        score: 78,
-        poseImageUrl: "/images/sample.png",
-    };
+    const { workoutsByDate } = useUserStore();
+
+    const feedbackEntries = Object.entries(workoutsByDate)
+        .filter(([_, data]) => data.feedback && data.feedback.trim() !== "")
+        .sort(([a], [b]) => new Date(b) - new Date(a)); // 최신순 정렬
 
     return (
         <div className="p-4 space-y-4">
-            <h1 className="text-2xl font-bold">운동 피드백</h1>
-
-            <div className="bg-white p-4 rounded shadow">
-                <p className="text-lg mb-2">점수: <span className="font-bold">{feedbackData.score}</span> / 100</p>
-                <p className="text-gray-800">{feedbackData.feedback}</p>
-                <img src={feedbackData.poseImageUrl} alt="분석 이미지" className="mt-4 rounded" />
-            </div>
+            <h1 className="text-xl font-bold mb-4">운동 피드백</h1>
+            {feedbackEntries.length === 0 ? (
+                <p className="text-gray-500">아직 피드백이 없습니다.</p>
+            ) : (
+                feedbackEntries.map(([date, { feedback }]) => (
+                    <div key={date} className="p-4 border rounded shadow bg-white">
+                        <h2 className="font-semibold mb-1">{date}</h2>
+                        <p>{feedback}</p>
+                    </div>
+                ))
+            )}
         </div>
     );
 }

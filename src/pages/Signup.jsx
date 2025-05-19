@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import BackButton from "../components/BackButton";
 import useUserStore from "../stores/userStore";
 import { useNavigate } from "react-router-dom";
+import logo from "../assets/logo.png";
 
 export default function Signup() {
     const setUser = useUserStore((state) => state.setUser);
@@ -96,9 +97,11 @@ export default function Signup() {
     return (
         <div className="flex flex-col items-center justify-center h-auto py-10 px-4 space-y-4 relative">
             <BackButton />
-            <div className="border-4 border-black rounded-full px-8 py-4 text-4xl font-black mb-6">
-                LevelUpFit
-            </div>
+            <img
+                src={logo}
+                alt="LevelUpFit"
+                className="w-4/5 max-w-xs object-contain"
+            />
 
             <div className="w-full max-w-md space-y-4">
                 {/* 이메일 입력 + 중복확인 */}

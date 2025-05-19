@@ -1,10 +1,15 @@
 import { useLocation, useNavigate } from "react-router-dom";
+import worksIcon from "../icon/works.png";
+import routineIcon from "../icon/routine.png";
+import feedbackIcon from "../icon/feedback.png";
+import userIcon from "../icon/user.png";
+
 
 const tabs = [
-    { label: "운동", icon: "/icons/works.png", path: "/workout" },
-    { label: "루틴", icon: "/icons/routine.png", path: "/routine" },
-    { label: "피드백", icon: "/icons/feedback.png", path: "/feedback" },
-    { label: "내 정보", icon: "/icons/user.png", path: "/my" },
+    { label: "운동", icon: worksIcon, path: "/workout" },
+    { label: "루틴", icon: routineIcon, path: "/routine" },
+    { label: "피드백", icon: feedbackIcon, path: "/feedback" },
+    { label: "내 정보", icon: userIcon, path: "/my" },
 ];
 
 export default function Menubar() {

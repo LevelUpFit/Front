@@ -1,26 +1,38 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useUserStore from "../stores/userStore";
 
 export default function AddWorkoutModal({ date, onClose }) {
+    const workoutsByDate = useUserStore((state) => state.workoutsByDate);
+    const setWorkoutByDate = useUserStore((state) => state.setWorkoutByDate);
+    const existing = workoutsByDate?.[date]; // 기존 데이터
+
     const [part, setPart] = useState("");
     const [routine, setRoutine] = useState("");
     const [feedback, setFeedback] = useState("");
-    const { workoutsByDate, setWorkouts } = useUserStore();
+
+    // ✅ 기존 운동 데이터 있을 경우 불러오기
+    useEffect(() => {
+        if (existing) {
+            setPart(existing.part || "");
+            setRoutine((existing.routine || []).join(", "));
+            setFeedback(existing.feedback || "");
+        }
+    }, [existing]);
 
     const handleSave = () => {
         const newWorkout = {
             part,
             routine: routine.split(",").map((item) => item.trim()),
-            feedback
+            feedback,
         };
-        setWorkouts({ ...workoutsByDate, [date]: newWorkout });
+        setWorkoutByDate(date, newWorkout);
         onClose();
     };
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded shadow-lg w-80">
-                <h2 className="text-xl font-bold mb-4">운동 추가 - {date}</h2>
+                <h2 className="text-xl font-bold mb-4">{existing ? "운동 수정" : "운동 추가"} - {date}</h2>
 
                 <input
                     type="text"

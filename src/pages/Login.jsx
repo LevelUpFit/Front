@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useUserStore from "../stores/userStore";
 import BackButton from "../components/BackButton";
+import logo from "../assets/logo.png"
 
 export default function Login() {
     const [email, setEmail] = useState("");
@@ -41,9 +42,11 @@ export default function Login() {
         <div className="flex flex-col items-center justify-center h-screen space-y-6 px-4 relative">
             <BackButton />
 
-            <div className="border-4 border-black rounded-full px-8 py-4 text-4xl font-black">
-                LevelUpFit
-            </div>
+            <img
+                src={logo}
+                alt="LevelUpFit"
+                className="w-4/5 max-w-xs object-contain"
+            />
 
             <input
                 type="email"
