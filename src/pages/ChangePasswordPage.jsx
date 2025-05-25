@@ -23,7 +23,7 @@ export default function ChangePasswordPage() {
 
         // TODO: 비밀번호 변경 API 연동
         alert("비밀번호가 변경되었습니다.");
-        navigate("/mypage");
+        navigate("/main");
     };
 
     function isValidPassword(pw) {

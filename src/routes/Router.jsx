@@ -5,8 +5,9 @@ import Signup from "../pages/Signup";
 import NotFound from "../pages/NotFound";
 import MyPage from "../pages/MyPage";
 import FeedbackPage from "../pages/FeedbackPage";
-import AccountPage from "../pages/AccountPage"; // ✅ 새로운 계정정보 컴포넌트
-import ChangePasswordPage from "../pages/ChangePasswordPage"; // ✅ 비밀번호 변경
+import AccountPage from "../pages/AccountPage";
+import ChangePasswordPage from "../pages/ChangePasswordPage";
+import MainPage from "../pages/MainPage";
 
 export default function AppRouter() {
     return (
@@ -15,6 +16,7 @@ export default function AppRouter() {
                 <Route path="/" element={<Welcome />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
+                <Route path="/main" element={<MainPage />} />
                 <Route path="/my" element={<MyPage />} />
                 <Route path="/feedback" element={<FeedbackPage />} />
                 <Route path="/account" element={<AccountPage />} />
