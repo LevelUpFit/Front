@@ -2,12 +2,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useUserStore from "../stores/userStore";
 import BackButton from "../components/BackButton";
-import logo from "../assets/logo.png"
+import logo from "../assets/logo.png";
+import { login } from "../api/auth"; // ✅ 로그인 함수 가져옴
 
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [remember, setRemember] = useState(false);
     const setUser = useUserStore((state) => state.setUser);
     const navigate = useNavigate();
 
@@ -15,26 +15,16 @@ export default function Login() {
     const isFilled = email && password && isValidEmail;
 
     const handleLogin = async () => {
-        if (!isValidEmail) return alert("이메일 형식 확인!");
+        if (!isValidEmail) return alert("이메일 형식이 올바르지 않습니다.");
 
         try {
-            const res = await fetch("http://localhost:8080/api/signin", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    userId: email,
-                    pwd: password,
-                }),
-            });
-
-            if (!res.ok) return alert("로그인 실패");
-
-            const userInfo = await res.json();
-            setUser(userInfo); // Zustand + localStorage 저장
+            const res = await login(email, password); // ✅ 분리된 함수 호출
+            setUser(res.data);
             alert("로그인 성공!");
             navigate("/home");
         } catch (err) {
-            alert("서버 오류");
+            console.error("로그인 실패:", err);
+            alert("로그인 실패! 아이디 또는 비밀번호를 확인해주세요.");
         }
     };
 
@@ -72,14 +62,16 @@ export default function Login() {
                 onClick={handleLogin}
                 disabled={!isFilled}
                 className={`w-full max-w-md py-4 text-xl font-bold rounded ${
-                    isFilled ? "bg-blue-500 text-white" : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    isFilled
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
                 }`}
             >
                 로그인
             </button>
 
             <a
-                href="http://localhost:8080/oauth2/authorization/kakao"
+                href={`${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/kakao`}
                 className="w-full max-w-md bg-yellow-300 text-black py-3 text-center rounded font-semibold"
             >
                 카카오 로그인

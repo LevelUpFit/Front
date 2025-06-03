@@ -5,8 +5,8 @@ const useUserStore = create((set) => ({
     workoutsByDate: {},
 
     // 유저 설정
-    setUser: ({ email, nickname, kakaoId, profile }) => {
-        const userInfo = { email, nickname, kakaoId, profile };
+    setUser: ({ email, nickname, kakaoId, profile, level }) => {
+        const userInfo = { email, nickname, kakaoId, profile, level };
         localStorage.setItem("user", JSON.stringify(userInfo));
         set({ user: userInfo });
     },
