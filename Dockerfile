@@ -7,6 +7,7 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
+RUN chmod +x node_modules/.bin/vite
 RUN npm run build
 
 # 2단계: Nginx로 정적 파일 서빙
