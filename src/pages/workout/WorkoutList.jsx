@@ -43,6 +43,14 @@ export default function WorkoutList() {
         if (levelValue) fetchWorkoutPlans(levelValue);
     }, [levelText]);
 
+    useEffect(() => {
+        if (plans.length === 0) {
+            console.log("❗ plans가 비어있습니다. API 응답 또는 파싱을 확인하세요.");
+        } else {
+            console.log("✅ plans 데이터:", plans);
+        }
+    }, [plans]);
+
     // 부위별 그룹핑
     const groupedPlans = plans.reduce((acc, plan) => {
         const key = plan.targetMuscle;
