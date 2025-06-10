@@ -7,6 +7,18 @@ export const login = async (email, password) => {
     });
 };
 
+export const checkEmail = async (email) => {
+    return api.post("/user/checkEmail", { email });
+};
+
+export const changePassword = async (userId, oldPassword, newPassword) => {
+    return api.patch("/user/password", {
+        userId,
+        oldPassword: oldPassword,
+        newPassword: newPassword,
+    });
+};
+
 export const signup = async (userData) => {
     return api.post("/user/register", userData);
 };

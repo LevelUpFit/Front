@@ -3,6 +3,7 @@ import BackButton from "../components/BackButton";
 import useUserStore from "../stores/userStore";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
+import { checkEmail,signup } from "../api/auth";
 
 export default function Signup() {
     const setUser = useUserStore((state) => state.setUser);
@@ -33,9 +34,14 @@ export default function Signup() {
         }
         setCheckingEmail(true);
         try {
-            const res = await fetch(`http://localhost:8080/api/check-email?email=${email}`);
-            const data = await res.json();
-            setIsEmailAvailable(data.available);
+            const res = await checkEmail(email);
+            if (!res.ok) {
+                setIsEmailAvailable(true); // 서버 오류 시 이메일 사용 가능으로 처리
+                setIsEmailValid(true);
+                setCheckingEmail(false);
+                emailRef.current && emailRef.current.setAttribute("disabled", "true");
+                return;
+            }
         } catch (e) {
             setIsEmailAvailable(false);
         }
@@ -60,34 +66,23 @@ export default function Signup() {
         if (!isFormValid) return;
 
         const signupData = {
-            formUserDto: {
-                userId: email,
-                pwd: password,
-            },
-            userDto: {
-                email,
-                nickname: "NewUser", // 기본 닉네임 값 지정
-                dob: birth,
-                level: parseInt(level),
-                gender,
-                profile: "default/profile.png",
-            },
+            email,
+            pwd: password,
+            gender,
+            dob: birth,
+            level: parseInt(level),
         };
 
         try {
-            const res = await fetch("http://localhost:8080/api/signup", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(signupData),
-            });
-
-            if (res.ok) {
-                const result = await res.json();
-                setUser(result);
+            const res = await signup(signupData);
+            console.log("회원가입 응답:", res);
+            if (!res.data.success) {
+                alert(`회원가입 실패: ${res.message || "알 수 없는 오류"}`);
+                return;
+            }
+            if (res.data.success) {
                 alert("회원가입 성공!");
-                navigate("/home");
-            } else {
-                alert("회원가입 실패");
+                navigate("/login");
             }
         } catch (e) {
             alert("서버 연결 실패");

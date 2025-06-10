@@ -14,8 +14,13 @@ export default function MyPage() {
     const navigate = useNavigate();
 
     const dateKey = selectedDate.toISOString().split("T")[0];
+    
     const workoutData = workoutsByDate?.[dateKey];
-
+    const workoutDates = [
+        "2025-06-01",
+        "2025-06-05",
+        "2025-06-10"
+    ];
     const openAddModal = (isEdit = false) => {
         setEditMode(isEdit);
         setShowAddModal(true);
@@ -48,7 +53,7 @@ export default function MyPage() {
                     <Calendar
                         selectedDate={selectedDate}
                         onSelect={setSelectedDate}
-                        workoutDates={Object.keys(workoutsByDate || {})}
+                        workoutDates={workoutDates}
                     />
                 </div>
 
