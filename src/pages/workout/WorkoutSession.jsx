@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout";
 import api from "../../api/api";
+import { getRoutineExercises } from "../../api/exercise";
 
 export default function WorkoutSession() {
-    const { muscle } = useParams();
+    const { routineId } = useParams();
     const navigate = useNavigate();
 
     const [exercises, setExercises] = useState([]);
@@ -15,14 +16,19 @@ export default function WorkoutSession() {
     useEffect(() => {
         const fetchExercises = async () => {
             try {
-                const res = await api.get(`/exercise/group/${muscle}`);
+                const res = await getRoutineExercises(routineId);
+                console.log("api", res);
                 if (res.data.success) {
                     setExercises(res.data.data);
                     setSets(
-                        res.data.data.map(() => [
-                            { set: 1, weight: 30, reps: 12, done: false },
-                            { set: 2, weight: 30, reps: 12, done: false },
-                        ])
+                        res.data.data.map((exercise) =>
+                            Array.from({ length: exercise.sets }).map((_, idx) => ({
+                                set: idx + 1,
+                                weight: 30,
+                                reps: exercise.reps[idx] ?? 12,
+                                done: false,
+                            }))
+                        )
                     );
                 }
             } catch (err) {
@@ -30,7 +36,7 @@ export default function WorkoutSession() {
             }
         };
         fetchExercises();
-    }, [muscle]);
+    }, [routineId]);
 
     const current = exercises[currentIndex];
 
@@ -85,7 +91,7 @@ export default function WorkoutSession() {
 
     return (
         <Layout>
-            <div className="text-lg font-bold text-center mb-2">{muscle} 운동 1</div>
+            <div className="text-lg font-bold text-center mb-2">{routineId} 운동 1</div>
 
             <div className="flex justify-between items-center mb-2">
                 <span className="font-semibold">{current.name}</span>
@@ -125,6 +131,20 @@ export default function WorkoutSession() {
             >
                 다음 세트
             </button>
+
+            {/* 운동 목록 나열 */}
+            <ul className="my-4 space-y-2">
+                {exercises.map((exercise, idx) => (
+                    <li key={exercise.id} className="border rounded px-4 py-2 flex justify-between items-center">
+                        <span>
+                            운동 순서 {exercise.exerciseOrder}번 (ID: {exercise.exerciseId})
+                        </span>
+                        <span>
+                            세트: {exercise.sets} / 반복: {exercise.reps.join(", ")}회 / 휴식: {exercise.restTime}초
+                        </span>
+                    </li>
+                ))}
+            </ul>
         </Layout>
     );
 }
