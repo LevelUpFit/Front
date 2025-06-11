@@ -33,23 +33,6 @@ export default function WorkoutSummary() {
         }
     }, [exercises, startTime, endTime]);
 
-    const handleSave = async () => {
-        try {
-            await api.post("/record/save-summary", {
-                muscle,
-                totalWeight,
-                duration,
-                date: today,
-                exercises,
-            });
-            alert("기록 저장 완료!");
-            navigate("/main");
-        } catch (err) {
-            console.error("요약 저장 실패", err);
-            alert("저장에 실패했습니다.");
-        }
-    };
-
     return (
         <Layout>
             <div className="bg-blue-600 text-white text-center py-6 text-xl font-bold rounded-xl mb-4">
@@ -89,10 +72,10 @@ export default function WorkoutSummary() {
             ))}
 
             <button
-                onClick={handleSave}
+                onClick={() => navigate("/main")}
                 className="w-full py-3 mt-6 bg-blue-600 text-white rounded text-lg font-semibold"
             >
-                저장하기
+                메인으로
             </button>
         </Layout>
     );
