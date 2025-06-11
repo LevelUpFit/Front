@@ -53,10 +53,11 @@ export default function RoutineInfo() {
                             return (
                                 <li
                                     key={ex.id}
-                                    className="bg-white rounded-xl shadow flex items-center gap-4 p-4"
+                                    className="bg-white rounded-xl shadow flex items-center gap-4 p-4 cursor-pointer hover:bg-blue-50 transition"
+                                    onClick={() => navigate(`/exercise-info/${ex.exerciseId}`)} // 카드 클릭 시 이동
                                 >
                                     <img
-                                        src={IMAGE_BASE_URL+detail?.thumbnailUrl || defaultImg}
+                                        src={IMAGE_BASE_URL + (detail?.thumbnailUrl || "") || defaultImg}
                                         alt={detail?.name || "운동"}
                                         className="w-16 h-16 object-contain"
                                     />

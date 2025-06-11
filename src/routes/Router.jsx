@@ -15,6 +15,7 @@ import WorkoutSummary from "../pages/workout/WorkoutSummary";
 import RoutineMain from "../pages/routine/RoutineMain";
 import RoutineInfo from "../pages/routine/RoutineInfo";
 import RoutineEditor from "../pages/routine/RoutineEditor";
+import ExerciseInfo from "../pages/exercise/ExerciseInfoPage";
 
 export default function AppRouter() {
     return (
@@ -35,6 +36,7 @@ export default function AppRouter() {
                 <Route path="/workout/summary" element={<WorkoutSummary />} />
                 <Route path="/routine" element={<RoutineMain />} />
                 <Route path="/routine/edit/:id" element={<RoutineEditor />} />
+                <Route path="/exercise-info/:exerciseId" element={<ExerciseInfo />} />
             </Routes>
         </BrowserRouter>
     );
