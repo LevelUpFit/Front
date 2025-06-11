@@ -19,9 +19,9 @@ export default function Login() {
 
         try {
             const res = await login(email, password); // ✅ 분리된 함수 호출
-            setUser(res.data);
+            setUser(res.data.data);
             alert("로그인 성공!");
-            navigate("/home");
+            navigate("/main"); // 로그인 성공 후 메인 페이지로 이동
         } catch (err) {
             console.error("로그인 실패:", err);
             alert("로그인 실패! 아이디 또는 비밀번호를 확인해주세요.");

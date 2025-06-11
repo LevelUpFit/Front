@@ -1,35 +1,51 @@
+import { useState } from "react";
 import Layout from "../components/Layout";
 import { useNavigate } from "react-router-dom";
 
 export default function FeedbackPage() {
     const navigate = useNavigate();
 
+    // ✅ 선택 상태 추가
+    const [selectedLevel, setSelectedLevel] = useState("초급");
+    const [selectedExercise, setSelectedExercise] = useState("스쿼트");
+
     return (
         <Layout>
-            <div className="bg-gray-200 px-4 py-3">
-                <div className="flex items-center gap-2">
+            <div className="bg-gray-200 px-4 py-4">
+                <div className="flex items-center">
                     {/* ◀ 버튼 */}
-                    <button onClick={() => navigate(-1)} className="text-xl font-bold">
+                    <button onClick={() => navigate(-1)} className="text-2xl mr-4">
                         ◀
                     </button>
 
-                    {/* 드롭다운 2개 */}
-                    <select className="bg-white border px-4 py-1 rounded-full text-sm shadow">
-                        <option>초급</option>
-                        <option>중급</option>
-                        <option>고급</option>
-                    </select>
+                    {/* 드롭다운 */}
+                    <div className="flex flex-1 justify-center gap-24">
+                        <select
+                            value={selectedLevel}
+                            onChange={(e) => setSelectedLevel(e.target.value)}
+                            className="bg-white border px-4 py-2 rounded-full text-base shadow font-semibold"
+                        >
+                            <option value="초급">초급</option>
+                            <option value="중급">중급</option>
+                            <option value="고급">고급</option>
+                        </select>
 
-                    <select className="bg-white border px-4 py-1 rounded-full text-sm shadow">
-                        <option>스쿼트</option>
-                    </select>
+                        <select
+                            value={selectedExercise}
+                            onChange={(e) => setSelectedExercise(e.target.value)}
+                            className="bg-white border px-4 py-2 rounded-full text-base shadow font-semibold"
+                        >
+                            <option value="스쿼트">스쿼트</option>
+                            <option value="런지">런지</option>
+                            <option value="푸쉬업">푸쉬업</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
-
-            {/* ✅ 본문 시작 */}
+            {/* ✅ 본문 */}
             <div className="p-4 space-y-6">
-                {/* 상체 해부도 + 가이드 */}
+                {/* 운동 이미지 + 업로드 버튼 */}
                 <div className="bg-white p-4 rounded shadow space-y-4">
                     <img
                         src="/src/assets/squat_guide.png"
@@ -61,7 +77,7 @@ export default function FeedbackPage() {
                     </div>
 
                     <div className="bg-gray-100 p-4 rounded text-sm">
-                        <strong>헬린이123 스쿼트 피드백</strong>
+                        <strong>헬린이123 {selectedExercise} 피드백</strong>
                         <ul className="list-disc list-inside mt-2 text-gray-700">
                             <li>고관절 각도를 조금 더 세우세요.</li>
                             <li>무릎이 앞으로 너무 많이 나오니 엉덩이를 뒤로 빼주세요.</li>

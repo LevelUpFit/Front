@@ -2,10 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useUserStore from "../stores/userStore";
 import Layout from "../components/Layout";
+import { changePassword } from "../api/auth";
 
 export default function ChangePasswordPage() {
     const navigate = useNavigate();
-    const { user } = useUserStore();
+    const { user, getUserId } = useUserStore();
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
@@ -20,7 +21,15 @@ export default function ChangePasswordPage() {
             alert("비밀번호는 영문+숫자 조합 8자 이상이어야 합니다.");
             return;
         }
-
+        const userId = getUserId();
+        console.log("userId", userId);
+        const res = changePassword(userId, currentPassword, newPassword);
+        if(res.data.success){
+            alert("비밀번호 변경이 완료되었습니다.");
+        } else{
+            alert("비밀번호 변경에 실패했습니다. 다시 시도해주세요.");
+            return;
+        }
         // TODO: 비밀번호 변경 API 연동
         alert("비밀번호가 변경되었습니다.");
         navigate("/main");
