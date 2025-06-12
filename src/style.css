@@ -2,7 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Roboto 폰트 패밀리 등록 */
+@font-face {
+    font-family: 'Roboto';
+    src: url('/assets/font//Roboto-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Roboto';
+    src: url('/assets/font//Roboto-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Roboto';
+    src: url('/assets/font/Roboto-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Roboto';
+    src: url('/assets/font/Roboto-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Roboto';
+    src: url('/assets/font/Roboto-ExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Roboto';
+    src: url('/assets/font/Roboto-Black.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+}
+
 /* 커스텀 리셋 */
 html, body, #root {
     @apply m-0 p-0 w-full;
+    font-family: 'Roboto', sans-serif;
 }

@@ -7,7 +7,7 @@ function getKoreaDateKey(date) {
     return korea.toISOString().split("T")[0];
 }
 
-export default function Calendar({ selectedDate, onSelect, workoutDates }) {
+export default function Calendar({ selectedDate, onSelect, workoutDates, onActiveStartDateChange }) {
     const today = new Date();
     const tileClassName = ({ date, view }) => {
         const dateStr = getKoreaDateKey(date); // 한국 시간 기준으로 변환
@@ -19,6 +19,15 @@ export default function Calendar({ selectedDate, onSelect, workoutDates }) {
 
     const tileDisabled = ({ date }) => date > today;
 
+    // 일요일 빨간색, 토요일 파란색, 나머지는 검정색
+    const formatDay = (_, date) => {
+        const day = date.getDay();
+        let color = "text-black";
+        if (day === 0) color = "text-red-500";      // 일요일
+        else if (day === 6) color = "text-blue-500"; // 토요일
+        return <span className={color}>{date.getDate()}</span>;
+    };
+
     return (
         <CalendarLib
             onChange={onSelect}
@@ -27,7 +36,9 @@ export default function Calendar({ selectedDate, onSelect, workoutDates }) {
             tileDisabled={tileDisabled}
             locale="ko-KR"
             showNeighboringMonth={false}
-            calendarType="hebrew" //주의 시작 일요일로 설정
+            calendarType="hebrew"
+            formatDay={formatDay}
+            onActiveStartDateChange={onActiveStartDateChange} // 추가!
         />
     );
 }

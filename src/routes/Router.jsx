@@ -16,6 +16,8 @@ import RoutineMain from "../pages/routine/RoutineMain";
 import RoutineInfo from "../pages/routine/RoutineInfo";
 import RoutineEditor from "../pages/routine/RoutineEditor";
 import ExerciseInfo from "../pages/exercise/ExerciseInfoPage";
+import RoutineSetEditor from "../pages/routine/RoutineSetEditor";
+import RoutineExerciseEditor from "../pages/routine/RoutineExerciseEditor";
 
 export default function AppRouter() {
     return (
@@ -36,6 +38,8 @@ export default function AppRouter() {
                 <Route path="/workout/summary" element={<WorkoutSummary />} />
                 <Route path="/routine" element={<RoutineMain />} />
                 <Route path="/routine/edit/:id" element={<RoutineEditor />} />
+                <Route path="/routine/set-editor" element={<RoutineSetEditor />} />
+                <Route path="/routine/exercise-editor" element={<RoutineExerciseEditor />} />
                 <Route path="/exercise-info/:exerciseId" element={<ExerciseInfo />} />
             </Routes>
         </BrowserRouter>
