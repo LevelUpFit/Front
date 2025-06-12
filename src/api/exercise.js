@@ -1,4 +1,4 @@
-import api from "./apiDev";
+import api from "./api";
 
 export const createExercise = async ({ name, description, targetMuscle }) => {
     return api.post("/exercise/create", {

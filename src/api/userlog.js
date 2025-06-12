@@ -1,4 +1,4 @@
-import api from "./apiDev";
+import api from "./api";
 
 export const saveRoutineLog = async (userId, routineId, performedDate) => {
     const body = {
