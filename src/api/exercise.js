@@ -22,3 +22,8 @@ export const getRoutineExercises = async (routineId) => {
 export const getExerciseById = async (exerciseId) => {
     return await api.get(`/exercise/${exerciseId}`);
 };
+
+// 운동 로그 저장
+export const saveExerciseLog = async (exerciseLog) => {
+    return await api.post("/exercise-log/save", exerciseLog);
+};

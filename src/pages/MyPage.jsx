@@ -66,12 +66,6 @@ export default function MyPage() {
         setShowAddModal(true);
     };
 
-    // 날짜를 YYYY-MM-DD로 변환해서 비교
-    const isWorkoutDay = (dateObj) => {
-        const yyyyMMdd = dateObj.toISOString().slice(0, 10);
-        return workoutDates.includes(yyyyMMdd);
-    };
-
     useEffect(() => {
         // 오늘 날짜 운동 기록 자동 조회
         const fetchTodayWorkout = async () => {
@@ -94,6 +88,30 @@ export default function MyPage() {
         };
         fetchTodayWorkout();
     }, [getUserId]);
+
+    // 운동 기록 저장 핸들러
+    const handleSaveWorkout = (workout) => {
+        // 실제로는 서버에 저장 요청을 보내야 함
+        // 여기서는 예시로 화면에만 추가
+        setWorkoutData(prev =>
+            Array.isArray(prev) ? [...prev, workout] : [workout]
+        );
+    };
+
+    // 달력에서 월이 바뀔 때 호출
+    const handleMonthChange = async ({ activeStartDate }) => {
+        try {
+            const userId = getUserId();
+            const year = activeStartDate.getFullYear();
+            const month = activeStartDate.getMonth() + 1;
+            const res = await getUserLogsByDate({ userId, year, month });
+            if (res.data.success) {
+                setWorkoutDates(res.data.data);
+            }
+        } catch (e) {
+            setWorkoutDates([]);
+        }
+    };
 
     return (
         <Layout>
@@ -121,10 +139,28 @@ export default function MyPage() {
                 <div className="bg-white p-4 rounded-xl shadow">
                     <Calendar
                         selectedDate={selectedDate}
-                        onSelect={handleSelectDate} // ← 변경
-                        workoutDates={workoutDates} // ["2025-06-12", ...] 그대로 전달
+                        onSelect={handleSelectDate}
+                        workoutDates={workoutDates}
+                        onActiveStartDateChange={handleMonthChange} // 추가!
                     />
                 </div>
+
+                <button
+                    className="w-full bg-white rounded-xl py-3 font-semibold shadow"
+                    onClick={() => openAddModal(false)}
+                >
+                    운동 기록하기
+                </button>
+
+                {/* 운동 추가/수정 모달 */}
+                {showAddModal && (
+                    <AddWorkoutModal
+                        date={getKoreaDateKey(selectedDate)}
+                        onClose={() => setShowAddModal(false)}
+                        onSave={handleSaveWorkout}
+                        initialData={editMode ? workoutData : null} // 추가!
+                    />
+                )}
 
                 {/* 운동 상세 데이터 표시 */}
                 {workoutData?.feedback && (
@@ -180,9 +216,10 @@ export default function MyPage() {
                 {/* 운동 추가/수정 모달 */}
                 {showAddModal && (
                     <AddWorkoutModal
-                        date={dateKey}
-                        initialData={editMode ? workoutData : null}
+                        date={getKoreaDateKey(selectedDate)}
                         onClose={() => setShowAddModal(false)}
+                        onSave={handleSaveWorkout}
+                        initialData={editMode ? workoutData : null} // 추가!
                     />
                 )}
             </div>
