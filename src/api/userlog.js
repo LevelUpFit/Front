@@ -1,4 +1,4 @@
-import api from "./apiDev";
+import api from "./api";
 
 export const saveRoutineLog = async (userId, routineId, performedDate) => {
     const body = {
@@ -26,5 +26,19 @@ export const getUserLogDetailByDate = async ({ userId, performedDate }) => {
             userId,
             performedDate
         }
+    });
+};
+
+//운동 기록 삭제제
+export const deleteExerciseLog = async (exerciseLogId) => {
+    return api.delete('/exercise-log', {
+        data: { exerciseLogId }
+    });
+};
+
+//루틴 기록 삭제
+export const deleteRoutineLog = async (logId) => {
+    return api.delete('/routines-log', {
+        data: { logId }
     });
 };
