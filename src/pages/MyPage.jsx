@@ -5,7 +5,9 @@ import FeedbackCard from "../components/FeedbackCard";
 import AddWorkoutModal from "../components/AddWorkoutModal";
 import Layout from "../components/Layout";
 import { useNavigate } from "react-router-dom";
-import { getUserLogsByDate, getUserLogDetailByDate } from "../api/userlog";
+import { getUserLogsByDate, getUserLogDetailByDate, deleteRoutineLog, deleteExerciseLog } from "../api/userlog";
+import { SwipeableList, SwipeableListItem } from "react-swipeable-list";
+import "react-swipeable-list/dist/styles.css";
 
 // 한국 시간 기준 YYYY-MM-DD 반환 함수
 function getKoreaDateKey(date) {
@@ -14,18 +16,16 @@ function getKoreaDateKey(date) {
 }
 
 export default function MyPage() {
-    const { workoutsByDate, removeWorkoutByDate, getUserId } = useUserStore();
+    const { getUserId } = useUserStore();
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [showAddModal, setShowAddModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [workoutDates, setWorkoutDates] = useState([]);
-    const [workoutData, setWorkoutData] = useState(null); // ← 추가
+    const [workoutData, setWorkoutData] = useState(null);
     const navigate = useNavigate();
 
-    // 항상 한국 시간 기준으로 dateKey 생성
     const dateKey = getKoreaDateKey(selectedDate);
 
-    // 날짜 불러오기
     useEffect(() => {
         const fetchWorkoutDates = async () => {
             try {
@@ -35,7 +35,7 @@ export default function MyPage() {
                 const month = now.getMonth() + 1;
                 const res = await getUserLogsByDate({ userId, year, month });
                 if (res.data.success) {
-                    setWorkoutDates(res.data.data); // ["YYYY-MM-DD", ...]
+                    setWorkoutDates(res.data.data);
                 }
             } catch (e) {
                 setWorkoutDates([]);
@@ -44,7 +44,6 @@ export default function MyPage() {
         fetchWorkoutDates();
     }, [getUserId]);
 
-    // 날짜 클릭 시 운동 상세 조회
     const handleSelectDate = async (date) => {
         setSelectedDate(date);
         const userId = getUserId();
@@ -52,7 +51,7 @@ export default function MyPage() {
         try {
             const res = await getUserLogDetailByDate({ userId, performedDate });
             if (res.data.success) {
-                setWorkoutData(res.data.data); // 상세 데이터 저장
+                setWorkoutData(res.data.data);
             } else {
                 setWorkoutData(null);
             }
@@ -61,38 +60,8 @@ export default function MyPage() {
         }
     };
 
-    const openAddModal = (isEdit = false) => {
-        setEditMode(isEdit);
-        setShowAddModal(true);
-    };
-
-    useEffect(() => {
-        // 오늘 날짜 운동 기록 자동 조회
-        const fetchTodayWorkout = async () => {
-            const userId = getUserId();
-            const today = new Date();
-            const performedDate = getKoreaDateKey(today);
-            try {
-                const res = await getUserLogDetailByDate({ userId, performedDate });
-                if (res.data.success) {
-                    setWorkoutData(res.data.data);
-                    setSelectedDate(today); // 오늘 날짜로 선택
-                } else {
-                    setWorkoutData(null);
-                    setSelectedDate(today);
-                }
-            } catch (e) {
-                setWorkoutData(null);
-                setSelectedDate(today);
-            }
-        };
-        fetchTodayWorkout();
-    }, [getUserId]);
-
-    // 운동 기록 저장 핸들러
+    // 운동 기록 저장 핸들러 (예시)
     const handleSaveWorkout = (workout) => {
-        // 실제로는 서버에 저장 요청을 보내야 함
-        // 여기서는 예시로 화면에만 추가
         setWorkoutData(prev =>
             Array.isArray(prev) ? [...prev, workout] : [workout]
         );
@@ -110,6 +79,23 @@ export default function MyPage() {
             }
         } catch (e) {
             setWorkoutDates([]);
+        }
+    };
+
+    // 삭제 핸들러 함수 수정
+    const handleDeleteLog = async (log, idx) => {
+        if (window.confirm("정말 삭제하시겠습니까?")) {
+            try {
+                if (log.log_type === "ROUTINE" && log.id) {
+                    await deleteRoutineLog(log.id );
+                } else if (log.log_type === "EXERCISE" && log.id) {
+                    await deleteExerciseLog(log.id );
+                }
+                setWorkoutData(prev => prev.filter((_, i) => i !== idx));
+                alert("삭제 성공");
+            } catch (e) {
+                alert("삭제 실패");
+            }
         }
     };
 
@@ -174,9 +160,21 @@ export default function MyPage() {
                                 수정
                             </button>
                             <button
-                                onClick={() => {
+                                onClick={async () => {
                                     if (confirm("정말 삭제하시겠습니까?")) {
-                                        removeWorkoutByDate(dateKey);
+                                        try {
+                                            // 루틴 기록 삭제
+                                            if (workoutData.logId) {
+                                                await deleteRoutineLog({ logId: workoutData.logId });
+                                            }
+                                            // 운동 기록 삭제
+                                            if (workoutData.exerciseLogId) {
+                                                await deleteExerciseLog({ exerciseLogId: workoutData.exerciseLogId });
+                                            }
+                                            setWorkoutData(null);
+                                        } catch (e) {
+                                            alert("삭제 실패");
+                                        }
                                     }
                                 }}
                                 className="px-4 py-2 bg-red-500 text-white font-semibold rounded"
@@ -192,10 +190,13 @@ export default function MyPage() {
                     <div className="mt-4 space-y-3">
                         <h3 className="font-bold text-lg mb-2">운동 기록</h3>
                         {workoutData.map((log, idx) => (
-                            <div
-                                key={idx}
-                                className="bg-white rounded-lg shadow p-3 flex flex-col gap-1"
-                            >
+                            <div key={idx} className="bg-white rounded-lg shadow p-3 flex flex-col gap-1 relative">
+                                <button
+                                    className="absolute top-2 right-2 text-red-500 font-bold"
+                                    onClick={() => handleDeleteLog(log, idx)}
+                                >
+                                    삭제
+                                </button>
                                 <div className="font-semibold">{log.name}</div>
                                 <div className="text-sm text-gray-600">
                                     {log.log_type === "ROUTINE" ? "루틴 기록" : "운동 기록"}
