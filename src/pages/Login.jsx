@@ -4,6 +4,7 @@ import useUserStore from "../stores/userStore";
 import BackButton from "../components/BackButton";
 import logo from "../assets/logo.png";
 import { login } from "../api/auth"; // ✅ 로그인 함수 가져옴
+import kakaoLoginImg from "../assets/kakao_login.png"; // 카카오 버튼 이미지 추가
 
 export default function Login() {
     const [email, setEmail] = useState("");
@@ -72,9 +73,15 @@ export default function Login() {
 
             <a
                 href={`${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/kakao`}
-                className="w-full max-w-md bg-yellow-300 text-black py-3 text-center rounded font-semibold"
+                className="w-full max-w-md py-0 rounded flex items-center justify-center"
+                style={{ background: "#FEE500", height: 48 }}
             >
-                카카오 로그인
+                <img
+                    src={kakaoLoginImg}
+                    alt="카카오 로그인"
+                    className="h-12 w-auto object-contain"
+                    style={{ minHeight: 48 }}
+                />
             </a>
         </div>
     );

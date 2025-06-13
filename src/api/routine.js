@@ -19,3 +19,13 @@ export const createRoutine = async (routineData) => {
 export const createRoutinesExercise = async (routineExercises) => {
     return api.post(`/routines-exercises`, routineExercises);
 }
+
+//루틴 삭제
+export const deleteRoutine = async (routineId) => {
+    return api.delete(`/routine`, { data: { routineId } });
+}
+
+//루틴 수정
+export const patchRoutine = async (routineData) => {
+    return api.patch(`/routine`, routineData);
+}

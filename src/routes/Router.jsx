@@ -18,6 +18,7 @@ import RoutineEditor from "../pages/routine/RoutineEditor";
 import ExerciseInfo from "../pages/exercise/ExerciseInfoPage";
 import RoutineSetEditor from "../pages/routine/RoutineSetEditor";
 import RoutineExerciseEditor from "../pages/routine/RoutineExerciseEditor";
+import KakaoCallback from "../pages/kakao/KakaoCallback";
 
 export default function AppRouter() {
     return (
@@ -25,6 +26,7 @@ export default function AppRouter() {
             <Routes>
                 <Route path="/" element={<Welcome />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/kakao/callback" element={<KakaoCallback />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/main" element={<MainPage />} />
                 <Route path="/my" element={<MyPage />} />

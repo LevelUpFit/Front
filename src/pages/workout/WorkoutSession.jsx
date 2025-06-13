@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout";
 import useUserStore from "../../stores/userStore";
@@ -19,6 +19,9 @@ export default function WorkoutSession() {
     const [sets, setSets] = useState([]);
     const [currentSetIndex, setCurrentSetIndex] = useState(0);
 
+    // 스크롤 ref 추가
+    const listRef = useRef(null);
+
     useEffect(() => {
         const fetchExercises = async () => {
             try {
@@ -29,8 +32,9 @@ export default function WorkoutSession() {
                         res.data.data.map((exercise) =>
                             Array.from({ length: exercise.sets }).map((_, idx) => ({
                                 set: idx + 1,
-                                weight: 30,
-                                reps: exercise.reps[idx] ?? 12,
+                                // weight와 reps를 각각 배열에서 가져오도록 수정
+                                weight: exercise.weight?.[idx] ?? 30,
+                                reps: exercise.reps?.[idx] ?? 12,
                                 done: false,
                             }))
                         )
@@ -102,18 +106,30 @@ export default function WorkoutSession() {
         }
     };
 
+    // 세트/운동이 바뀔 때마다 해당 카드로 스크롤
+    useEffect(() => {
+        if (!listRef.current) return;
+        // 현재 운동 카드 DOM 찾기
+        const card = listRef.current.querySelector(`[data-ex-idx="${currentIndex}"]`);
+        if (card) {
+            // 카드의 위치가 보이도록 스크롤(부드럽게)
+            card.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    }, [currentIndex, currentSetIndex]);
+
     if (!exercises.length) return <Layout>로딩 중...</Layout>;
 
     return (
         <Layout>
             <div className="max-w-md mx-auto min-h-screen flex flex-col relative">
                 {/* 운동 전체 리스트 스크롤 영역 */}
-                <div className="flex-1 overflow-y-auto pb-32 mt-6">
+                <div className="flex-1 overflow-y-auto pb-32 mt-6" ref={listRef}>
                     {exercises.map((ex, exIdx) => {
                         const detail = exerciseDetails[ex.exerciseId];
                         return (
                             <div
                                 key={ex.id}
+                                data-ex-idx={exIdx} // 스크롤 타겟용
                                 className={`bg-white rounded-xl shadow flex flex-col items-center gap-2 p-4 mb-4 ${
                                     exIdx === currentIndex ? "border-2 border-blue-500" : ""
                                 }`}
