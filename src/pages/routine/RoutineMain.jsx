@@ -90,7 +90,10 @@ export default function RoutineMain() {
                 ) : (
                     <>
                         <div className="grid gap-4 mb-6">
-                            {routines.map(routine => (
+                            {routines
+    .slice()
+    .sort((a, b) => (a.exerciseOrder || 0) - (b.exerciseOrder || 0)) // order 순 정렬
+    .map(routine => (
                                 <div
                                     key={routine.routineId}
                                     className="bg-white rounded-xl p-5 flex items-center shadow justify-between hover:shadow-lg transition relative cursor-pointer"
@@ -136,7 +139,8 @@ export default function RoutineMain() {
                                         <div className="routine-popup absolute top-12 right-4 z-20 bg-white border rounded-xl shadow-lg py-2 w-28 flex flex-col">
                                             <button
                                                 className="px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 text-left"
-                                                onClick={() => {
+                                                onClick={e => {
+                                                    e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
                                                     setPopupId(null);
                                                     navigate(`/routine/edit/${routine.routineId}`);
                                                 }}
