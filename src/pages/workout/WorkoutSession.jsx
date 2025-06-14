@@ -27,12 +27,15 @@ export default function WorkoutSession() {
             try {
                 const res = await getRoutineExercises(routineId);
                 if (res.data.success) {
-                    setExercises(res.data.data);
+                    // order 순서대로 정렬
+                    const sorted = res.data.data
+                        .slice()
+                        .sort((a, b) => (a.exerciseOrder || 0) - (b.exerciseOrder || 0));
+                    setExercises(sorted);
                     setSets(
-                        res.data.data.map((exercise) =>
+                        sorted.map((exercise) =>
                             Array.from({ length: exercise.sets }).map((_, idx) => ({
                                 set: idx + 1,
-                                // weight와 reps를 각각 배열에서 가져오도록 수정
                                 weight: exercise.weight?.[idx] ?? 30,
                                 reps: exercise.reps?.[idx] ?? 12,
                                 done: false,
@@ -41,7 +44,7 @@ export default function WorkoutSession() {
                     );
                     // 운동 상세정보 병렬 조회
                     const detailsArr = await Promise.all(
-                        res.data.data.map((ex) => getExerciseById(ex.exerciseId))
+                        sorted.map((ex) => getExerciseById(ex.exerciseId))
                     );
                     const detailsObj = {};
                     detailsArr.forEach((detailRes) => {

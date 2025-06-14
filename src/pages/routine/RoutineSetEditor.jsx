@@ -63,7 +63,7 @@ export default function RoutineSetEditor() {
                     exercises.map(ex => ({
                         ...ex,
                         exerciseId: ex.id,
-                        routineExerciseId: null, // 새 운동이므로 null
+                        routineExerciseId: null,
                         sets: [{ weight: "", reps: "" }],
                     }))
                 );
@@ -73,14 +73,16 @@ export default function RoutineSetEditor() {
             try {
                 const res = await getRoutineExercises(routineId);
                 if (res.data && res.data.success && res.data.data.length > 0) {
-                    const routineExerciseList = res.data.data;
-                    // 전체 운동 목록에서 카드 정보 매칭
+                    const routineExerciseList = res.data.data
+                        .slice() // 복사본 생성
+                        .sort((a, b) => (a.exerciseOrder || 0) - (b.exerciseOrder || 0)); // order순 정렬
+
                     const setsArr = routineExerciseList.map(routineEx => {
                         const exInfo = allExercises.find(e => e.id === routineEx.exerciseId) || {};
                         return {
                             ...exInfo,
                             exerciseId: routineEx.exerciseId,
-                            routineExerciseId: routineEx.id, // 기존 운동이면 id 저장
+                            routineExerciseId: routineEx.id,
                             sets: (routineEx.reps || []).map((reps, idx) => ({
                                 reps: reps,
                                 weight: routineEx.weight && routineEx.weight[idx] !== undefined ? routineEx.weight[idx] : "",
@@ -165,27 +167,16 @@ export default function RoutineSetEditor() {
 
     // 저장/수정 분기
     const handleSave = async () => {
-        // 기존 루틴-운동 정보 불러오기
-        let existingRoutineExerciseList = [];
-        try {
-            const res = await getRoutineExercises(routineId);
-            if (res.data && res.data.success) {
-                existingRoutineExerciseList = res.data.data;
-            }
-        } catch (e) {
-            // 무시
-        }
-
-        // 현재 입력된 운동 정보
+        // 저장 시, 드래그로 바뀐 순서대로 exerciseOrder를 재설정
         const currentList = exerciseSets.map((ex, idx) => ({
-            id: ex.routineExerciseId, // 기존 운동이면 id, 새 운동이면 null
+            id: ex.routineExerciseId,
             routineId,
             exerciseId: ex.exerciseId,
             sets: ex.sets.length,
             reps: ex.sets.map(set => Number(set.reps)),
-            weight: ex.sets.map(set => Number(set.weight)), // weight 배열로!
+            weight: ex.sets.map(set => Number(set.weight)),
             restTime: 60,
-            exerciseOrder: idx + 1,
+            exerciseOrder: idx + 1, // 순서대로 재설정
         }));
 
         // PATCH용: 기존에 있던 운동만

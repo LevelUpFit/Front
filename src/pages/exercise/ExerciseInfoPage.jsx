@@ -23,10 +23,6 @@ export default function ExerciseInfo() {
         fetchExercise();
     }, [exerciseId]);
 
-    useEffect(() => {
-        div.scrollTo(0, 0);
-    }, []);
-
     return (
         <Layout>
             <div className="flex flex-col min-h-screen px-4 py-6 pb-24">
