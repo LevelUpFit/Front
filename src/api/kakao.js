@@ -1,4 +1,4 @@
-import api from "./apiDev";
+import api from "./api";
 
 
 export const kakaoLogin = () => api.get("/user/kakao/login");
