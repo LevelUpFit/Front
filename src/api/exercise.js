@@ -1,4 +1,4 @@
-import api from "./api";
+import api from "./apiDev";
 
 export const createExercise = async ({ name, description, targetMuscle }) => {
     return api.post("/exercise/create", {
@@ -31,4 +31,8 @@ export const getExerciseById = async (exerciseId) => {
 // 운동 로그 저장
 export const saveExerciseLog = async (exerciseLog) => {
     return await api.post("/exercise-log/save", exerciseLog);
+};
+
+export const patchRoutinesExercise = async (data) => {
+    return await api.patch("/routines-exercises", data);
 };
