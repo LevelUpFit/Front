@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { getAllExercises } from "../../api/exercise";
+import { getRoutineExercises } from "../../api/exercise"; // 추가
 
 const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
 
@@ -13,15 +14,29 @@ export default function RoutineExerciseEditor() {
     const [selected, setSelected] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // 기존 루틴의 운동 불러오기
     useEffect(() => {
         const fetchExercises = async () => {
             setLoading(true);
             try {
+                // 전체 운동 목록 불러오기
                 const res = await getAllExercises();
+                let all = [];
                 if (res.data && res.data.success) {
-                    setExercises(res.data.data);
+                    all = res.data.data;
+                    setExercises(all);
                 } else {
                     setExercises([]);
+                }
+
+                // 루틴 ID가 있으면 해당 루틴의 운동도 선택 처리
+                if (routineId) {
+                    // 루틴 내 운동 조회 API 사용
+                    const routineExRes = await getRoutineExercises(routineId);
+                    if (routineExRes.data && routineExRes.data.success) {
+                        // routineExRes.data.data가 [{exerciseId: ...}, ...] 형태
+                        setSelected(routineExRes.data.data.map(ex => ex.exerciseId));
+                    }
                 }
             } catch (e) {
                 setExercises([]);
@@ -29,7 +44,7 @@ export default function RoutineExerciseEditor() {
             setLoading(false);
         };
         fetchExercises();
-    }, []);
+    }, [routineId]);
 
     const toggle = (id) => {
         setSelected((prev) =>

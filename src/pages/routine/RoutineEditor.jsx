@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { Camera } from "lucide-react";
-import { createRoutine } from "../../api/routine";
-import useUserStore from "../../stores/userStore"; // 추가
+import { createRoutine, patchRoutine, getRoutineById } from "../../api/routine";
+import useUserStore from "../../stores/userStore";
 
 import backImg from "../../assets/back.png";
 import chestImg from "../../assets/chest.png";
@@ -11,17 +11,35 @@ import legImg from "../../assets/leg.png";
 
 export default function RoutineEditor() {
     const navigate = useNavigate();
-    const { getUserId } = useUserStore(); // 추가
+    const { id } = useParams();
+    const isEdit = !!id && id !== "new";
+    const { getUserId } = useUserStore();
+
     const [routineName, setRoutineName] = useState("나만의 루틴1");
     const [selectedPart, setSelectedPart] = useState("등");
     const [routineExercises, setRoutineExercises] = useState([]);
-    // 예시 운동 데이터
-    const allExercises = [
-        { id: 1, name: "케이블 로우", targetMuscle: "등", thumbnailUrl: "/img1.png" },
-        { id: 2, name: "어시스트 풀업", targetMuscle: "등", thumbnailUrl: "/img2.png" },
-        { id: 3, name: "랫 풀다운", targetMuscle: "등", thumbnailUrl: "/img3.png" },
-        { id: 4, name: "V 업", targetMuscle: "복근", thumbnailUrl: "/img4.png" },
-    ];
+
+    // 수정 모드일 때 기존 데이터 불러오기
+    useEffect(() => {
+        if (isEdit) {
+            const fetch = async () => {
+                try {
+                    const userId = getUserId();
+                    const res = await getRoutineById(userId);
+                    // 실제 API에 맞게 아래 부분 수정 필요
+                    const found = res.data.data.find(r => String(r.routineId) === String(id));
+                    if (found) {
+                        setRoutineName(found.name);
+                        setSelectedPart(found.targetMuscle);
+                        // setRoutineExercises(found.exercises || []); // exercises 필드가 있다면
+                    }
+                } catch (e) {
+                    alert("루틴 정보를 불러오지 못했습니다.");
+                }
+            };
+            fetch();
+        }
+    }, [id, isEdit, getUserId]);
 
     // 운동 추가
     const handleAddExercises = (ids) => {
@@ -30,33 +48,46 @@ export default function RoutineEditor() {
         setShowAddModal(false);
     };
 
-    // 저장 버튼 클릭 시 루틴 생성 후 routineId와 함께 다음 페이지로 이동
+    // 저장 버튼 클릭 시
     const handleGoToSetEditor = async () => {
         try {
             const userId = getUserId();
-            const res = await createRoutine({
-                userId,
-                name: routineName,
-                targetMuscle: selectedPart,
-                description: "기능 구현중",
-                difficulty: 1,
-            });
-            if (res.data.success) {
-                const routineId = res.data.data.routineId;
-                navigate("/routine/set-editor", {
-                    state: {
-                        routineId,
-                        name: routineName,
-                        targetMuscle: selectedPart,
-                        thumbnailUrl: muscleOptions.find(m => m.label === selectedPart)?.img || "",
-                        exercises: [], // 최초엔 빈 배열
-                    },
+            let routineId;
+            if (isEdit && id) {
+                // PATCH (수정)
+                const res = await patchRoutine({
+                    routineId: Number(id),
+                    name: routineName,
+                    description: "기능 구현중",
+                    difficulty: 1,
                 });
+                if (!res.data.success) throw new Error();
+                routineId = Number(id);
             } else {
-                alert("루틴 생성에 실패했습니다.");
+                // POST (생성)
+                const res = await createRoutine({
+                    userId,
+                    name: routineName,
+                    targetMuscle: selectedPart,
+                    description: "기능 구현중",
+                    difficulty: 1,
+                });
+                if (res.data.success) {
+                    routineId = res.data.data.routineId;
+                } else {
+                    throw new Error();
+                }
             }
+            navigate("/routine/set-editor", {
+                state: {
+                    routineId,
+                    name: routineName,
+                    targetMuscle: selectedPart,
+                    thumbnailUrl: muscleOptions.find(m => m.label === selectedPart)?.img || "",
+                },
+            });
         } catch (e) {
-            alert("저장 실패");
+            alert(isEdit ? "수정 실패" : "저장 실패");
         }
     };
 
@@ -81,7 +112,7 @@ export default function RoutineEditor() {
                         <Camera className="text-white w-6 h-6" />
                     </div>
                 </div>
-                <div className="text-white text-sm mt-1">편집 모드</div>
+                <div className="text-white text-sm mt-1">{isEdit ? "수정 모드" : "편집 모드"}</div>
             </div>
 
             {/* 운동 카드 리스트 */}

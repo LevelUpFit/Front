@@ -4,6 +4,8 @@ import useUserStore from "../stores/userStore";
 import BackButton from "../components/BackButton";
 import logo from "../assets/logo.png";
 import { login } from "../api/auth"; // ✅ 로그인 함수 가져옴
+import { kakaoLogin } from "../api/kakao"; // ✅ 카카오 로그인 함수 가져옴
+import kakaoLoginImg from "../assets/kakao_login.png"; // 카카오 버튼 이미지 추가
 
 export default function Login() {
     const [email, setEmail] = useState("");
@@ -28,8 +30,18 @@ export default function Login() {
         }
     };
 
+    const handleSocialLogin = async () => {
+            try {
+                const response = await kakaoLogin();
+                window.location.href = response.data;
+                console.log("카카오 로그인 URL:", response);
+            } catch (error) {
+                console.error("로그인 중 오류 발생", error);
+            }
+        }
+
     return (
-        <div className="flex flex-col items-center justify-center h-screen space-y-6 px-4 relative">
+        <div className="flex flex-col items-center justify-center h-screen space-y-6 px-4 ">
             <BackButton />
 
             <img
@@ -70,12 +82,17 @@ export default function Login() {
                 로그인
             </button>
 
-            <a
-                href={`${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/kakao`}
-                className="w-full max-w-md bg-yellow-300 text-black py-3 text-center rounded font-semibold"
+            <button
+                onClick={handleSocialLogin}
+                className="w-full max-w-md flex items-center justify-center"
+                style={{ padding: 0, background: "transparent", borderRadius: 0, height: "auto" }}
             >
-                카카오 로그인
-            </a>
+                <img
+                    src={kakaoLoginImg}
+                    alt="카카오 로그인"
+                    style={{ display: "block", width: "100%", height: "auto", maxWidth: 300, pointerEvents: "auto" }}
+                />
+            </button>
         </div>
     );
 }

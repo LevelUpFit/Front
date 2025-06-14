@@ -32,3 +32,7 @@ export const getExerciseById = async (exerciseId) => {
 export const saveExerciseLog = async (exerciseLog) => {
     return await api.post("/exercise-log/save", exerciseLog);
 };
+
+export const patchRoutinesExercise = async (data) => {
+    return await api.patch("/routines-exercises", data);
+};
