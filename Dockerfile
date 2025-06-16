@@ -15,10 +15,8 @@ FROM nginx:stable-alpine
 
 # React build 결과물을 Nginx의 정적 파일 디렉토리로 복사
 COPY --from=build /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Nginx 설정 파일 덮어쓰기 (필요할 경우만)
-# COPY nginx.conf /etc/nginx/nginx.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # 80포트 노출
 EXPOSE 80
