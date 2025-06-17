@@ -6,8 +6,12 @@ import AddWorkoutModal from "../components/AddWorkoutModal";
 import Layout from "../components/Layout";
 import { useNavigate } from "react-router-dom";
 import { getUserLogsByDate, getUserLogDetailByDate, deleteRoutineLog, deleteExerciseLog } from "../api/userlog";
+import { saveExerciseLog } from "../api/exercise";
 import { SwipeableList, SwipeableListItem } from "react-swipeable-list";
 import "react-swipeable-list/dist/styles.css";
+import AddExerciseModal from "../components/AddExerciseModal"; // 필요시 삭제
+// Modal import 제거
+// import Modal from "../components/Modal"; 
 
 // 한국 시간 기준 YYYY-MM-DD 반환 함수
 function getKoreaDateKey(date) {
@@ -22,6 +26,11 @@ export default function MyPage() {
     const [editMode, setEditMode] = useState(false);
     const [workoutDates, setWorkoutDates] = useState([]);
     const [workoutData, setWorkoutData] = useState(null);
+    const [exerciseNames, setExerciseNames] = useState(""); // 콤마로 입력받는 운동명
+    const [targetMuscle, setTargetMuscle] = useState("하체");
+    const [feedback, setFeedback] = useState("노오력이 부족");
+    const [showExerciseModal, setShowExerciseModal] = useState(false);
+    const [editExerciseData, setEditExerciseData] = useState(null); // 수정용 데이터
     const navigate = useNavigate();
 
     const dateKey = getKoreaDateKey(selectedDate);
@@ -60,13 +69,6 @@ export default function MyPage() {
         }
     };
 
-    // 운동 기록 저장 핸들러 (예시)
-    const handleSaveWorkout = (workout) => {
-        setWorkoutData(prev =>
-            Array.isArray(prev) ? [...prev, workout] : [workout]
-        );
-    };
-
     // 달력에서 월이 바뀔 때 호출
     const handleMonthChange = async ({ activeStartDate }) => {
         try {
@@ -99,6 +101,37 @@ export default function MyPage() {
         }
     };
 
+    // 운동 추가/수정 모달 열기
+    const openAddModal = (edit = false, data = null) => {
+        setEditExerciseData(edit ? data : null);
+        setShowAddModal(true);
+    };
+
+    // 운동 추가/수정 모달 닫기
+    const closeAddModal = () => {
+        setShowAddModal(false);
+        setEditExerciseData(null);
+    };
+
+    // 운동 추가/수정 완료 시
+    const handleAddOrEditExercise = async (newWorkout) => {
+        // 저장 후 해당 날짜의 기록을 다시 조회
+        const userId = getUserId();
+        const performedDate = getKoreaDateKey(selectedDate);
+        try {
+            const res = await getUserLogDetailByDate({ userId, performedDate });
+            if (res.data.success) {
+                setWorkoutData(res.data.data);
+            } else {
+                setWorkoutData(null);
+            }
+        } catch (e) {
+            setWorkoutData(null);
+        }
+        setShowAddModal(false);
+        setEditExerciseData(null);
+    };
+
     return (
         <Layout>
             <div className="flex flex-col min-h-screen px-4 py-6 bg-gray-200 space-y-4 overflow-y-auto">
@@ -127,7 +160,7 @@ export default function MyPage() {
                         selectedDate={selectedDate}
                         onSelect={handleSelectDate}
                         workoutDates={workoutDates}
-                        onActiveStartDateChange={handleMonthChange} // 추가!
+                        onActiveStartDateChange={handleMonthChange}
                     />
                 </div>
 
@@ -138,13 +171,13 @@ export default function MyPage() {
                     운동 기록하기
                 </button>
 
-                {/* 운동 추가/수정 모달 */}
+                {/* 운동 추가/수정 입력 모달 */}
                 {showAddModal && (
                     <AddWorkoutModal
                         date={getKoreaDateKey(selectedDate)}
-                        onClose={() => setShowAddModal(false)}
-                        onSave={handleSaveWorkout}
-                        initialData={editMode ? workoutData : null} // 추가!
+                        onClose={closeAddModal}
+                        onSave={handleAddOrEditExercise}
+                        initialData={editExerciseData}
                     />
                 )}
 
@@ -154,7 +187,11 @@ export default function MyPage() {
                         <FeedbackCard feedback={workoutData.feedback} />
                         <div className="flex justify-end gap-2 px-2">
                             <button
-                                onClick={() => openAddModal(true)}
+                                onClick={() => openAddModal(true, {
+                                    name: workoutData.name,
+                                    targetMuscle: workoutData.targetMuscle,
+                                    feedback: workoutData.feedback,
+                                })}
                                 className="px-4 py-2 bg-yellow-400 text-white font-semibold rounded"
                             >
                                 수정
@@ -212,16 +249,6 @@ export default function MyPage() {
                             </div>
                         ))}
                     </div>
-                )}
-
-                {/* 운동 추가/수정 모달 */}
-                {showAddModal && (
-                    <AddWorkoutModal
-                        date={getKoreaDateKey(selectedDate)}
-                        onClose={() => setShowAddModal(false)}
-                        onSave={handleSaveWorkout}
-                        initialData={editMode ? workoutData : null} // 추가!
-                    />
                 )}
             </div>
         </Layout>
