@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import UploadGuideModal from "../components/UploadGuideModal";
 import squatGuideGif from "../assets/squat_guide.gif";
 import lungeGuideGif from "../assets/lunge_guide.gif";
+import { uploadExerciseVideo } from "../api/feedback";
+import useUserStore from "../stores/userStore";
 
 // 커스텀 드롭다운 컴포넌트
 function CustomSelect({ options, value, onChange, borderColor = "#3b82f6", open, setOpen, name }) {
@@ -204,6 +206,9 @@ export default function FeedbackPage() {
 
     const fileInputRef = useRef(null);
     const [selectedVideo, setSelectedVideo] = useState(null);
+    //const [feedbackId, setFeedbackId] = useState(null); // 분석 요청 후 받은 id 저장
+    const socketRef = useRef(null);
+    const { getUserId } = useUserStore();
 
     // 예시 피드백 리스트
     const [feedbackList] = useState([
@@ -253,13 +258,75 @@ export default function FeedbackPage() {
         setShowOrientationModal(true);
     };
 
-    // 실제 분석 API 호출 핸들러
-    const handleConfirmAnalyze = (orientation) => {
+    // 분석 API 호출 및 WebSocket 연결
+    const handleConfirmAnalyze = async (orientation) => {
         setVideoOrientation(orientation);
         setShowOrientationModal(false);
-        // TODO: 분석 API 호출 로직 작성
-        // analyzeVideo({ orientation, video: selectedVideo })
+
+        // 업로드할 데이터 준비
+        const userId = getUserId();
+        const exerciseId = 19; // 임시 데이터
+        const video = selectedVideo;
+        const isPortrait = orientation === "세로";
+        const performedDate = "2025-06-12"; // 샘플 날짜
+
+        if (!video) {
+            alert("동영상을 업로드해야 합니다.");
+            return;
+        }
+
+        try {
+            // 동영상 업로드 API 호출
+            const res = await uploadExerciseVideo({
+                userId,
+                exerciseId,
+                video,
+                isPortrait,
+                performedDate,
+            });
+
+            // 실제로는 res.data.feedbackId 등 서버 응답에서 받아야 함
+            const newFeedbackId = res.data.data.feedbackId || "123";
+            console.log("분석 요청 성공:", newFeedbackId);
+            alert("분석 요청이 성공적으로 전송되었습니다!");
+            //setFeedbackId(newFeedbackId);
+
+            // WebSocket 연결
+            const wsBaseUrl = import.meta.env.VITE_WS_BASE_URL;
+            console.log("ws 연결전")
+            const socket = new WebSocket(`${wsBaseUrl}/ws/feedback/${newFeedbackId}`);
+            console.log("ws 연결후")
+            socketRef.current = socket;
+
+            socket.onopen = () => {
+                console.log("WebSocket 열림");
+            };
+
+            socket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === "FEEDBACK_ANALYSIS_COMPLETE") {
+                    alert("분석 완료!");
+                    socket.close(); // 결과 받은 후 닫아야 함
+                }
+            };
+
+            socket.onclose = () => {
+                console.log("WebSocket close");
+                socketRef.current = null;
+            };
+        } catch (e) {
+            alert("동영상 업로드 또는 분석 요청에 실패했습니다.");
+        }
     };
+
+    // 3. 컴포넌트 언마운트 시 소켓 정리
+    useEffect(() => {
+        return () => {
+            if (socketRef.current) {
+                socketRef.current.close();
+            }
+        };
+    }, []);
 
     return (
         <Layout>

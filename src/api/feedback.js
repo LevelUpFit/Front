@@ -1,0 +1,16 @@
+import api from "./apiDev";
+
+export const uploadExerciseVideo = async ({ userId, exerciseId, video, isPortrait, performedDate }) => {
+    const formData = new FormData();
+    formData.append("userId", userId);
+    formData.append("exerciseId", exerciseId);
+    formData.append("video", video);
+    formData.append("isPortrait", isPortrait);
+    formData.append("performedDate", performedDate);
+
+    return api.post("/exercise-feedback/video", formData, {
+        headers: {
+            "Content-Type": "multipart/form-data",
+        },
+    });
+};
