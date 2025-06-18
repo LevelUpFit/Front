@@ -2,7 +2,7 @@ export default function FeedbackListCard({ feedback }) {
     return (
         <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3 mb-2 shadow-sm">
             <div>
-                <div className="font-semibold">{feedback.exercise} ({feedback.level})</div>
+                <div className="font-semibold">{feedback.exercise}</div>
                 <div className="text-xs text-gray-500">{feedback.date}</div>
             </div>
             <div>

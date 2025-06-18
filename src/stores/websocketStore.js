@@ -17,6 +17,7 @@ export const useWebSocketStore = create((set, get) => ({
       if (data.type === "FEEDBACK_ANALYSIS_COMPLETE") {
         alert("분석 완료!");
         socket.close(); // 연결 종료
+        window.location.reload(); //분석 종료후 페이지 새로고침
       }
     };
 

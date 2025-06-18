@@ -1,61 +1,96 @@
 import { useRef, useState, useEffect, useMemo } from "react";
-import Layout from "../components/Layout";
+import Layout from "../../components/Layout";
 import { useNavigate } from "react-router-dom";
-import UploadGuideModal from "../components/UploadGuideModal";
-import squatGuideGif from "../assets/squat_guide.gif";
-import lungeGuideGif from "../assets/lunge_guide.gif";
-import { uploadExerciseVideo } from "../api/feedback";
-import useUserStore from "../stores/userStore";
-import CustomSelect from "../components/CustomSelect";
-import FeedbackListCard from "../components/FeedbackListCard";
-import OrientationConfirmModal from "../components/OrientationConfirmModal";
-import { useWebSocketStore } from '../stores/websocketStore';
+import UploadGuideModal from "../../components/UploadGuideModal";
+import squatGuideGif from "../../assets/squat_guide.gif";
+import lungeGuideGif from "../../assets/lunge_guide.gif";
+import { uploadExerciseVideo, getFeedbackList } from "../../api/feedback";
+import useUserStore from "../../stores/userStore";
+import CustomSelect from "../../components/CustomSelect";
+import OrientationConfirmModal from "../../components/OrientationConfirmModal";
+import { useWebSocketStore } from '../../stores/websocketStore';
+import { getFeedbackAvailableExercises } from "../../api/exercise";
+import FeedbackListCard from "../../components/FeedbackListCard";
 
 export default function FeedbackPage() {
     const navigate = useNavigate();
     const [selectedLevel, setSelectedLevel] = useState("초급");
-    const [selectedExercise, setSelectedExercise] = useState("스쿼트");
+    const [selectedExercise, setSelectedExercise] = useState("");
+    const [exerciseOptions, setExerciseOptions] = useState([]);
+    const [exerciseIdNameMap, setExerciseIdNameMap] = useState({});
     const [showGuide, setShowGuide] = useState(false);
     const [openDropdown, setOpenDropdown] = useState(null);
     const [showOrientationModal, setShowOrientationModal] = useState(false);
     const [videoOrientation, setVideoOrientation] = useState("세로");
+    const [selectedExerciseId, setSelectedExerciseId] = useState(null);
 
     const fileInputRef = useRef(null);
     const [selectedVideo, setSelectedVideo] = useState(null);
     const connect = useWebSocketStore((state) => state.connect);
-    const socket = useWebSocketStore((state) => state.socket);
     const { getUserId } = useUserStore();
 
-    // 예시 피드백 리스트
-    const [feedbackList] = useState([
-        {
-            id: 1,
-            exercise: "스쿼트",
-            level: "초급",
-            status: "pending",
-            date: "2025-06-17 13:12",
-        },
-        {
-            id: 2,
-            exercise: "런지",
-            level: "중급",
-            status: "done",
-            date: "2025-06-15 09:30",
-        },
-        {
-            id: 3,
-            exercise: "푸쉬업",
-            level: "고급",
-            status: "fail",
-            date: "2025-06-10 17:44",
-        },
-    ]);
+    // 피드백 리스트 상태
+    const [feedbackList, setFeedbackList] = useState([]);
 
     // 운동별 가이드 GIF 매핑
     const exerciseGuideMap = {
         "스쿼트": squatGuideGif,
         "런지": lungeGuideGif,
     };
+
+    // 운동명 옵션 및 id-name 매핑 불러오기
+    useEffect(() => {
+        async function fetchExercises() {
+            try {
+                const res = await getFeedbackAvailableExercises();
+                if (res.data && Array.isArray(res.data.data)) {
+                    // [{ name, exercise_id }]
+                    const options = res.data.data.map(item => ({
+                        name: item.name,
+                        exercise_id: item.exercise_id,
+                    }));
+                    setExerciseOptions(options);
+                    if (options.length > 0 && !selectedExercise) {
+                        setSelectedExercise(options[0].name);
+                    }
+                    // id-name 매핑
+                    const idNameMap = {};
+                    res.data.data.forEach(item => {
+                        idNameMap[item.exercise_id] = item.name;
+                    });
+                    setExerciseIdNameMap(idNameMap);
+                }
+            } catch (e) {
+                setExerciseOptions([]);
+                setExerciseIdNameMap({});
+            }
+        }
+        fetchExercises();
+        // eslint-disable-next-line
+    }, []);
+
+    // 피드백 리스트 불러오기 함수 분리
+    const fetchFeedbackList = async () => {
+        try {
+            const userId = getUserId();
+            const res = await getFeedbackList(userId);
+            if (res.data && Array.isArray(res.data.data)) {
+                // feedbackId 내림차순 정렬
+                const sorted = [...res.data.data].sort((a, b) => b.feedbackId - a.feedbackId);
+                setFeedbackList(sorted);
+            } else {
+                setFeedbackList([]);
+            }
+        } catch (e) {
+            setFeedbackList([]);
+        }
+    };
+
+    // 피드백 리스트 최초 불러오기
+    useEffect(() => {
+        fetchFeedbackList();
+        // eslint-disable-next-line
+    }, [getUserId]);
 
     const handleVideoUpload = (e) => {
         const file = e.target.files[0];
@@ -79,9 +114,8 @@ export default function FeedbackPage() {
         setVideoOrientation(orientation);
         setShowOrientationModal(false);
 
-        // 업로드할 데이터 준비
         const userId = getUserId();
-        const exerciseId = 19; // 임시 데이터
+        const exerciseId = selectedExerciseId; // 임시 데이터
         const video = selectedVideo;
         const isPortrait = orientation === "세로";
         const performedDate = "2025-06-12"; // 샘플 날짜
@@ -92,7 +126,6 @@ export default function FeedbackPage() {
         }
 
         try {
-            // 동영상 업로드 API 호출
             const res = await uploadExerciseVideo({
                 userId,
                 exerciseId,
@@ -101,13 +134,15 @@ export default function FeedbackPage() {
                 performedDate,
             });
 
-            // 실제로는 res.data.feedbackId 등 서버 응답에서 받아야 함
             const newFeedbackId = res.data.data.feedbackId || "none";
             alert("분석 요청이 성공적으로 전송되었습니다!");
 
-            // WebSocket 연결
+            // WebSocket 연결 (분석 완료 시 피드백 리스트 갱신)
             const wsBaseUrl = import.meta.env.VITE_WS_BASE_URL;
-            connect(`${wsBaseUrl}/ws/feedback/${newFeedbackId}`);
+            connect(`${wsBaseUrl}/ws/feedback/${newFeedbackId}`, fetchFeedbackList);
+
+            // 업로드 후 피드백 리스트 갱신
+            await fetchFeedbackList();
         } catch (e) {
             alert("동영상 업로드 또는 분석 요청에 실패했습니다.");
         }
@@ -124,7 +159,21 @@ export default function FeedbackPage() {
         return () => {
             if (videoUrl) URL.revokeObjectURL(videoUrl);
         };
-    }, [selectedVideo]); // <-- videoUrl이 아니라 selectedVideo로 변경
+    }, [selectedVideo]);
+
+    // 운동이 선택될 때마다 id도 자동 저장
+    useEffect(() => {
+        if (!selectedExercise || !exerciseOptions.length) {
+            setSelectedExerciseId(null);
+            return;
+        }
+        // exerciseOptions가 ["스쿼트", "런지"]가 아니라 [{name, exercise_id}, ...] 형태여야 함!
+        // 만약 options가 이름 배열이면 아래처럼 매핑해서 객체 배열로 바꿔주세요.
+        const selected = exerciseOptions.find(opt =>
+            typeof opt === "object" ? opt.name === selectedExercise : false
+        );
+        setSelectedExerciseId(selected ? selected.exercise_id : null);
+    }, [selectedExercise, exerciseOptions]);
 
     return (
         <Layout>
@@ -144,7 +193,7 @@ export default function FeedbackPage() {
                             name="level"
                         />
                         <CustomSelect
-                            options={["스쿼트", "런지"]}
+                            options={exerciseOptions.map(opt => opt.name)}
                             value={selectedExercise}
                             onChange={setSelectedExercise}
                             open={openDropdown}
@@ -204,10 +253,17 @@ export default function FeedbackPage() {
                     <div className="text-gray-400 text-center py-8">피드백 내역이 없습니다.</div>
                 ) : (
                     feedbackList.map((feedback) => (
-                        <FeedbackListCard
-                            key={feedback.id}
-                            feedback={feedback}
-                        />
+                        <div
+                            key={feedback.feedbackId}
+                            onClick={() => navigate(`/feedback/${feedback.feedbackId}`, { state: { feedback } })}
+                            className="cursor-pointer"
+                        >
+                            <FeedbackListCard feedback={{
+                                exercise: exerciseIdNameMap[feedback.exerciseId] || feedback.exerciseId,
+                                date: feedback.performedDate,
+                                status: feedback.videoUrl === null ? "pending" : "done"
+                            }} />
+                        </div>
                     ))
                 )}
             </div>

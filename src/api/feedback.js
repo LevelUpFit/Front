@@ -14,3 +14,9 @@ export const uploadExerciseVideo = async ({ userId, exerciseId, video, isPortrai
         },
     });
 };
+
+export const getFeedbackList = async (userId) => {
+    return api.get("/exercise-feedback/feedback-list", {
+        params: { userId },
+    });
+};

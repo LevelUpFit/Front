@@ -5,7 +5,8 @@ import Login from "../pages/Login";
 import Signup from "../pages/Signup";
 import NotFound from "../pages/NotFound";
 import MyPage from "../pages/MyPage";
-import FeedbackPage from "../pages/FeedbackPage";
+import FeedbackPage from "../pages/feedback/FeedbackPage";
+import FeedbackDetailPage from "../pages/feedback/FeedbackDetailPage";
 import AccountPage from "../pages/AccountPage";
 import ChangePasswordPage from "../pages/ChangePasswordPage";
 import MainPage from "../pages/MainPage";
@@ -28,21 +29,30 @@ export default function AppRouter() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/kakao/callback" element={<KakaoCallback />} />
                 <Route path="/signup" element={<Signup />} />
+
                 <Route path="/main" element={<MainPage />} />
+                
                 <Route path="/my" element={<MyPage />} />
+
                 <Route path="/feedback" element={<FeedbackPage />} />
+                <Route path="/feedback/:feedbackId" element={<FeedbackDetailPage />} />
+
                 <Route path="/account" element={<AccountPage />} />
                 <Route path="/account/edit" element={<ChangePasswordPage />} />
-                <Route path="*" element={<NotFound />} />
+
                 <Route path="/workout" element={<WorkoutList />} />
                 <Route path="/workout/info/:routineId" element={<RoutineInfo />} />
                 <Route path="/workout/group/:routineId" element={<WorkoutSession />} />
                 <Route path="/workout/summary" element={<WorkoutSummary />} />
+
                 <Route path="/routine" element={<RoutineMain />} />
                 <Route path="/routine/edit/:id" element={<RoutineEditor />} />
                 <Route path="/routine/set-editor" element={<RoutineSetEditor />} />
                 <Route path="/routine/exercise-editor" element={<RoutineExerciseEditor />} />
+
                 <Route path="/exercise-info/:exerciseId" element={<ExerciseInfo />} />
+
+                <Route path="*" element={<NotFound />} />
             </Routes>
         </BrowserRouter>
     );

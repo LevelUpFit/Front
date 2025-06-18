@@ -1,4 +1,4 @@
-import api from "./api";
+import api from "./apiDev";
 
 export const createExercise = async ({ name, description, targetMuscle }) => {
     return api.post("/exercise/create", {
@@ -33,6 +33,12 @@ export const saveExerciseLog = async (exerciseLog) => {
     return await api.post("/exercise-log/save", exerciseLog);
 };
 
+// 운동 루틴 수정
 export const patchRoutinesExercise = async (data) => {
     return await api.patch("/routines-exercises", data);
+};
+
+//피드백 가능 운동 조회
+export const getFeedbackAvailableExercises = async () => {
+    return await api.get("/exercise/feedback-exercise");
 };
