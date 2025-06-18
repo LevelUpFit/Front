@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import Layout from "../components/Layout";
 import { useNavigate } from "react-router-dom";
 import UploadGuideModal from "../components/UploadGuideModal";
@@ -6,194 +6,10 @@ import squatGuideGif from "../assets/squat_guide.gif";
 import lungeGuideGif from "../assets/lunge_guide.gif";
 import { uploadExerciseVideo } from "../api/feedback";
 import useUserStore from "../stores/userStore";
-
-// 커스텀 드롭다운 컴포넌트
-function CustomSelect({ options, value, onChange, borderColor = "#3b82f6", open, setOpen, name }) {
-    const isActive = open === name;
-    const selectRef = useRef(null);
-
-    useEffect(() => {
-        if (!isActive) return;
-        const handleClick = (e) => {
-            if (selectRef.current && !selectRef.current.contains(e.target)) {
-                setOpen(null);
-            }
-        };
-        document.addEventListener("mousedown", handleClick);
-        return () => document.removeEventListener("mousedown", handleClick);
-    }, [isActive, setOpen]);
-
-    return (
-        <div className="relative w-36 select-none" ref={selectRef}>
-            <button
-                type="button"
-                className="w-full bg-white rounded-xl border-2 py-1.5 px-3 text-base font-semibold flex items-center justify-between"
-                style={{
-                    borderColor: isActive ? borderColor : "#e5e7eb",
-                    boxShadow: isActive ? `0 0 0 2px #3b82f655` : "0 2px 8px 0 #3b82f622",
-                    transition: "box-shadow 0.2s, border-color 0.2s",
-                    minHeight: 38,
-                }}
-                onClick={() => setOpen(isActive ? null : name)}
-                tabIndex={0}
-            >
-                <span className="truncate">{value}</span>
-                <span className="ml-2 text-base text-gray-500">▴</span>
-            </button>
-            {isActive && (
-                <div
-                    className="absolute left-0 mt-2 w-full bg-white rounded-2xl shadow-lg z-20 border"
-                    style={{ boxShadow: "0 4px 16px 0 #3b82f633" }}
-                >
-                    {options.map((opt) => (
-                        <div
-                            key={opt}
-                            className={`px-4 py-2 cursor-pointer text-base ${
-                                value === opt
-                                    ? "bg-blue-100 text-blue-700 font-bold"
-                                    : "hover:bg-blue-50"
-                            }`}
-                            onClick={() => {
-                                onChange(opt);
-                                setOpen(null);
-                            }}
-                        >
-                            {opt}
-                        </div>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
-}
-
-// 피드백 카드 컴포넌트
-function FeedbackListCard({ feedback }) {
-    return (
-        <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3 mb-2 shadow-sm">
-            <div>
-                <div className="font-semibold">{feedback.exercise} ({feedback.level})</div>
-                <div className="text-xs text-gray-500">{feedback.date}</div>
-            </div>
-            <div>
-                {feedback.status === "pending" && (
-                    <span className="text-blue-500 font-semibold text-sm">분석중</span>
-                )}
-                {feedback.status === "done" && (
-                    <span className="text-green-500 font-semibold text-sm">완료</span>
-                )}
-                {feedback.status === "fail" && (
-                    <span className="text-red-500 font-semibold text-sm">실패</span>
-                )}
-            </div>
-        </div>
-    );
-}
-
-// 분석 모달 컴포넌트 (영상 방향 선택 포함)
-function OrientationConfirmModal({ video, orientation, setOrientation, onConfirm, onClose }) {
-    const [videoSize, setVideoSize] = useState({ width: 0, height: 0 });
-
-    useEffect(() => {
-        if (!video) return;
-        const url = URL.createObjectURL(video);
-        const tempVideo = document.createElement("video");
-        tempVideo.src = url;
-        tempVideo.onloadedmetadata = () => {
-            setVideoSize({
-                width: tempVideo.videoWidth,
-                height: tempVideo.videoHeight,
-            });
-            URL.revokeObjectURL(url);
-        };
-    }, [video]);
-
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-            <div className="bg-white rounded-xl shadow p-6 w-full max-w-xs mx-auto text-center">
-                <h2 className="text-lg font-bold mb-4">영상 방향을 확인해주세요</h2>
-                {/* 업로드한 영상 미리보기 */}
-                {video ? (
-                    <div
-                        className="mx-auto mb-4 bg-black rounded flex items-center justify-center"
-                        style={{
-                            width: videoSize.width ? `${Math.min(videoSize.width, 320)}px` : "auto",
-                            height: videoSize.height
-                                ? `${Math.min(videoSize.height, 320)}px`
-                                : "auto",
-                            maxWidth: "100%",
-                            maxHeight: "320px",
-                        }}
-                    >
-                        <video
-                            src={URL.createObjectURL(video)}
-                            controls
-                            style={{
-                                width: "100%",
-                                height: "100%",
-                                display: "block",
-                                background: "#000",
-                                borderRadius: "0.5rem",
-                            }}
-                        />
-                    </div>
-                ) : (
-                    <div className="w-full h-48 flex items-center justify-center bg-gray-100 rounded mb-4 text-gray-400">
-                        동영상을 업로드 해야합니다
-                    </div>
-                )}
-                {/* 세로/가로 토글 버튼 */}
-                <div className="flex justify-center my-0 mb-4">
-                    <div className="relative flex w-[190px] h-10 bg-gray-100 rounded-full shadow-sm mx-auto">
-                        <span
-                            className="absolute top-0 left-0 h-full w-1/2 transition-all duration-300 rounded-full bg-blue-500 z-0"
-                            style={{
-                                transform: orientation === "가로"
-                                    ? "translateX(100%)"
-                                    : "translateX(0%)",
-                            }}
-                        />
-                        <button
-                            className={`relative flex-1 z-10 text-base font-semibold transition-colors duration-300
-                                ${orientation === "세로" ? "text-white" : "text-gray-700"}
-                            `}
-                            style={{ borderRadius: "9999px" }}
-                            onClick={() => setOrientation("세로")}
-                            type="button"
-                        >
-                            세로영상
-                        </button>
-                        <button
-                            className={`relative flex-1 z-10 text-base font-semibold transition-colors duration-300
-                                ${orientation === "가로" ? "text-white" : "text-gray-700"}
-                            `}
-                            style={{ borderRadius: "9999px" }}
-                            onClick={() => setOrientation("가로")}
-                            type="button"
-                        >
-                            가로영상
-                        </button>
-                    </div>
-                </div>
-                <div className="flex gap-2">
-                    <button
-                        className="flex-1 bg-blue-500 text-white py-2 rounded font-bold"
-                        onClick={() => video && onConfirm(orientation)}
-                        disabled={!video}
-                    >
-                        확인
-                    </button>
-                    <button
-                        className="flex-1 bg-gray-300 py-2 rounded font-bold"
-                        onClick={onClose}
-                    >
-                        취소
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-}
+import CustomSelect from "../components/CustomSelect";
+import FeedbackListCard from "../components/FeedbackListCard";
+import OrientationConfirmModal from "../components/OrientationConfirmModal";
+import { useWebSocketStore } from '../stores/websocketStore';
 
 export default function FeedbackPage() {
     const navigate = useNavigate();
@@ -206,8 +22,8 @@ export default function FeedbackPage() {
 
     const fileInputRef = useRef(null);
     const [selectedVideo, setSelectedVideo] = useState(null);
-    //const [feedbackId, setFeedbackId] = useState(null); // 분석 요청 후 받은 id 저장
-    const socketRef = useRef(null);
+    const connect = useWebSocketStore((state) => state.connect);
+    const socket = useWebSocketStore((state) => state.socket);
     const { getUserId } = useUserStore();
 
     // 예시 피드백 리스트
@@ -286,47 +102,29 @@ export default function FeedbackPage() {
             });
 
             // 실제로는 res.data.feedbackId 등 서버 응답에서 받아야 함
-            const newFeedbackId = res.data.data.feedbackId || "123";
-            console.log("분석 요청 성공:", newFeedbackId);
+            const newFeedbackId = res.data.data.feedbackId || "none";
             alert("분석 요청이 성공적으로 전송되었습니다!");
-            //setFeedbackId(newFeedbackId);
 
             // WebSocket 연결
             const wsBaseUrl = import.meta.env.VITE_WS_BASE_URL;
-            console.log("ws 연결전")
-            const socket = new WebSocket(`${wsBaseUrl}/ws/feedback/${newFeedbackId}`);
-            console.log("ws 연결후")
-            socketRef.current = socket;
-
-            socket.onopen = () => {
-                console.log("WebSocket 열림");
-            };
-
-            socket.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                if (data.type === "FEEDBACK_ANALYSIS_COMPLETE") {
-                    alert("분석 완료!");
-                    socket.close(); // 결과 받은 후 닫아야 함
-                }
-            };
-
-            socket.onclose = () => {
-                console.log("WebSocket close");
-                socketRef.current = null;
-            };
+            connect(`${wsBaseUrl}/ws/feedback/${newFeedbackId}`);
         } catch (e) {
             alert("동영상 업로드 또는 분석 요청에 실패했습니다.");
         }
     };
 
-    // 3. 컴포넌트 언마운트 시 소켓 정리
+    // blob URL을 부모에서 관리
+    const videoUrl = useMemo(() => {
+        if (!selectedVideo) return null;
+        return URL.createObjectURL(selectedVideo);
+    }, [selectedVideo]);
+
+    // selectedVideo가 바뀔 때만 revoke
     useEffect(() => {
         return () => {
-            if (socketRef.current) {
-                socketRef.current.close();
-            }
+            if (videoUrl) URL.revokeObjectURL(videoUrl);
         };
-    }, []);
+    }, [selectedVideo]); // <-- videoUrl이 아니라 selectedVideo로 변경
 
     return (
         <Layout>
@@ -389,7 +187,7 @@ export default function FeedbackPage() {
                 </div>
             </div>
 
-            {/* 분석하기 버튼 (길게, 카드와 피드백 내역 사이) */}
+            {/* 분석하기 버튼 */}
             <div className="max-w-md mx-auto w-full mb-4">
                 <button
                     className="w-full bg-blue-500 hover:bg-blue-600 text-white text-lg font-bold py-3 rounded-xl shadow transition"
@@ -417,10 +215,11 @@ export default function FeedbackPage() {
             {/* 업로드 가이드 모달 */}
             {showGuide && <UploadGuideModal onClose={() => setShowGuide(false)} />}
 
-            {/* 영상 방향 확인 모달 (세로/가로 토글 포함, 페이지 내 토글 제거됨) */}
+            {/* 영상 방향 확인 모달 */}
             {showOrientationModal && (
                 <OrientationConfirmModal
                     video={selectedVideo}
+                    videoUrl={videoUrl}
                     orientation={videoOrientation}
                     setOrientation={setVideoOrientation}
                     onConfirm={handleConfirmAnalyze}
