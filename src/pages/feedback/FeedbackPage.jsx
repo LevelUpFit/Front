@@ -261,7 +261,8 @@ export default function FeedbackPage() {
                             <FeedbackListCard feedback={{
                                 exercise: exerciseIdNameMap[feedback.exerciseId] || feedback.exerciseId,
                                 date: feedback.performedDate,
-                                status: feedback.videoUrl === null ? "pending" : "done"
+                                status: feedback.videoUrl === null ? "pending" : "done",
+                                accuracy: feedback.accuracy // ← 추가!
                             }} />
                         </div>
                     ))
