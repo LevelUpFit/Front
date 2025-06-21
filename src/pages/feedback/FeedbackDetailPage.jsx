@@ -6,15 +6,19 @@ import { getExerciseById } from "../../api/exercise";
 // 예시 그래프 컴포넌트 (실제 데이터에 맞게 교체하세요)
 function FeedbackGraph({ feedback }) {
     const accuracy = feedback.accuracy || 0;
-    const dummyData = [
+    const movementRange = feedback.movementRange || 0;
+    const movementSpeed = feedback.movementSpeed || 0;
+
+    const graphData = [
         { label: "정확도", value: accuracy },
-        { label: "가동범위", value: Math.max(0, Math.min(100, accuracy - 10 + Math.random() * 20)) },
-        { label: "속도", value: Math.max(0, Math.min(100, accuracy - 20 + Math.random() * 40)) },
+        { label: "가동범위", value: movementRange },
+        { label: "속도", value: movementSpeed },
     ];
+
     return (
         <div className="w-full flex flex-col items-center">
             <div className="flex w-full justify-around items-end h-40 mb-4">
-                {dummyData.map((d, i) => (
+                {graphData.map((d, i) => (
                     <div key={i} className="flex flex-col items-center w-1/4">
                         <div
                             className="bg-blue-400 rounded-t"
@@ -30,7 +34,6 @@ function FeedbackGraph({ feedback }) {
                     </div>
                 ))}
             </div>
-            <div className="text-gray-500 text-sm">* 예시 그래프입니다.</div>
         </div>
     );
 }

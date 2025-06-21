@@ -262,7 +262,9 @@ export default function FeedbackPage() {
                                 exercise: exerciseIdNameMap[feedback.exerciseId] || feedback.exerciseId,
                                 date: feedback.performedDate,
                                 status: feedback.videoUrl === null ? "pending" : "done",
-                                accuracy: feedback.accuracy // ← 추가!
+                                accuracy: feedback.accuracy, // ← 추가!
+                                movementRange : feedback.movementRange,
+                                movementSpeed : feedback.movementSpeed,
                             }} />
                         </div>
                     ))
