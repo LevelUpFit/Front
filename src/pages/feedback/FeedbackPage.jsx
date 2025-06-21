@@ -109,16 +109,25 @@ export default function FeedbackPage() {
         setShowOrientationModal(true);
     };
 
+    // 난이도 문자열을 숫자로 변환하는 함수
+    const getLevelNumber = (level) => {
+        if (level === "초급") return 1;
+        if (level === "중급") return 2;
+        if (level === "고급") return 3;
+        return 1; // 기본값
+    };
+
     // 분석 API 호출 및 WebSocket 연결
     const handleConfirmAnalyze = async (orientation) => {
         setVideoOrientation(orientation);
         setShowOrientationModal(false);
 
         const userId = getUserId();
-        const exerciseId = selectedExerciseId; // 임시 데이터
+        const exerciseId = selectedExerciseId;
         const video = selectedVideo;
         const isPortrait = orientation === "세로";
         const performedDate = "2025-06-12"; // 샘플 날짜
+        const level = getLevelNumber(selectedLevel); // 난이도 숫자 변환
 
         if (!video) {
             alert("동영상을 업로드해야 합니다.");
@@ -132,6 +141,7 @@ export default function FeedbackPage() {
                 video,
                 isPortrait,
                 performedDate,
+                level, // level 필드 추가!
             });
 
             const newFeedbackId = res.data.data.feedbackId || "none";

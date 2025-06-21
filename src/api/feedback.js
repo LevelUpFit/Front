@@ -1,12 +1,13 @@
 import api from "./apiDev";
 
-export const uploadExerciseVideo = async ({ userId, exerciseId, video, isPortrait, performedDate }) => {
+export const uploadExerciseVideo = async ({ userId, exerciseId, video, isPortrait, performedDate, level }) => {
     const formData = new FormData();
     formData.append("userId", userId);
     formData.append("exerciseId", exerciseId);
     formData.append("video", video);
     formData.append("isPortrait", isPortrait);
     formData.append("performedDate", performedDate);
+    formData.append("level", level);
 
     return api.post("/exercise-feedback/video", formData, {
         headers: {
