@@ -117,6 +117,14 @@ export default function FeedbackPage() {
         return 1; // 기본값
     };
 
+    // level 숫자를 한글로 변환하는 함수
+    function getLevelLabel(level) {
+        if (level === 1) return "초급";
+        if (level === 2) return "중급";
+        if (level === 3) return "고급";
+        return "";
+    }
+
     // 분석 API 호출 및 WebSocket 연결
     const handleConfirmAnalyze = async (orientation) => {
         setVideoOrientation(orientation);
@@ -269,12 +277,13 @@ export default function FeedbackPage() {
                             className="cursor-pointer"
                         >
                             <FeedbackListCard feedback={{
-                                exercise: exerciseIdNameMap[feedback.exerciseId] || feedback.exerciseId,
+                                exercise:
+                                    `${exerciseIdNameMap[feedback.exerciseId] || feedback.exerciseId} (${getLevelLabel(feedback.level)})`,
                                 date: feedback.performedDate,
                                 status: feedback.videoUrl === null ? "pending" : "done",
-                                accuracy: feedback.accuracy, // ← 추가!
-                                movementRange : feedback.movementRange,
-                                movementSpeed : feedback.movementSpeed,
+                                accuracy: feedback.accuracy,
+                                movementRange: feedback.movementRange,
+                                movementSpeed: feedback.movementSpeed,
                             }} />
                         </div>
                     ))

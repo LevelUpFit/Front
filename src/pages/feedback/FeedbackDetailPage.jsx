@@ -7,19 +7,28 @@ import { getExerciseById } from "../../api/exercise";
 function FeedbackGraph({ feedback }) {
     const accuracy = feedback.accuracy || 0;
     const movementRange = feedback.movementRange || 0;
-    const movementSpeed = feedback.movementSpeed || 0;
+    // movementSpeed가 객체일 수 있으니 안전하게 처리
+    const contractionPercent = feedback.movementSpeed?.contractionPercent;
+    const relaxationPercent = feedback.movementSpeed?.relaxationPercent;
+    // 수축/이완 평균값 (둘 다 undefined/null이면 undefined)
+    const hasSpeed = typeof contractionPercent === "number" && typeof relaxationPercent === "number";
+    const avgSpeedPercent = hasSpeed ? (contractionPercent + relaxationPercent) / 2 : undefined;
 
+    // 속도 값이 있을 때만 그래프에 포함
     const graphData = [
         { label: "정확도", value: accuracy },
         { label: "가동범위", value: movementRange },
-        { label: "속도", value: movementSpeed },
+        ...(hasSpeed ? [{ label: "속도", value: avgSpeedPercent }] : []),
     ];
+
+    // w-1/4 → w-1/3 등으로 자동 너비 조정
+    const widthClass = `w-1/${graphData.length}`;
 
     return (
         <div className="w-full flex flex-col items-center">
             <div className="flex w-full justify-around items-end h-40 mb-4">
                 {graphData.map((d, i) => (
-                    <div key={i} className="flex flex-col items-center w-1/4">
+                    <div key={i} className={`flex flex-col items-center ${widthClass}`}>
                         <div
                             className="bg-blue-400 rounded-t"
                             style={{
@@ -178,7 +187,7 @@ export default function FeedbackDetailPage() {
                             </div>
                             <div className="w-full max-w-xs mx-auto">
                                 <span className="font-semibold text-gray-700">피드백</span>
-                                <div className="mt-1 p-3 bg-gray-50 rounded text-gray-800 min-h-[48px]">
+                                <div className="mt-1 p-3 bg-gray-50 rounded text-gray-800 min-h-[48px]" style={{ whiteSpace: "pre-line" }}>
                                     {feedback.feedbackText || "없음"}
                                 </div>
                             </div>
