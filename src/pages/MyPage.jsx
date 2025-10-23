@@ -134,28 +134,28 @@ export default function MyPage() {
 
     return (
         <Layout>
-            <div className="flex flex-col min-h-screen px-4 py-6 bg-gray-200 space-y-4 overflow-y-auto">
+            <div className="space-y-5">
                 {/* 상단 사용자 정보 */}
-                <div className="text-center mb-4">
-                    <h2 className="text-2xl font-bold">헬린이123 님</h2>
-                    <div className="mt-4 space-y-3">
+                <div className="text-center">
+                    <h2 className="text-2xl font-bold text-white mb-4">내 운동 기록</h2>
+                    <div className="grid grid-cols-2 gap-3">
                         <button
-                            className="w-full bg-white rounded-xl py-3 font-semibold shadow"
+                            className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl py-3 font-semibold shadow-lg hover:scale-105 transition transform"
                             onClick={() => openAddModal(false)}
                         >
                             루틴 기록하기
                         </button>
                         <button
                             onClick={() => navigate("/account")}
-                            className="w-full bg-white rounded-xl py-3 font-semibold shadow"
+                            className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl py-3 font-semibold shadow-lg hover:bg-white/20 transition"
                         >
-                            계정 정보 보기
+                            계정 정보
                         </button>
                     </div>
                 </div>
 
                 {/* 달력 */}
-                <div className="bg-white p-4 rounded-xl shadow">
+                <div className="bg-white/10 backdrop-blur-lg p-5 rounded-2xl border border-white/20 shadow-2xl">
                     <Calendar
                         selectedDate={selectedDate}
                         onSelect={handleSelectDate}
@@ -165,10 +165,10 @@ export default function MyPage() {
                 </div>
 
                 <button
-                    className="w-full bg-white rounded-xl py-3 font-semibold shadow"
+                    className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl py-3 font-semibold shadow-lg hover:scale-105 transition transform"
                     onClick={() => openAddModal(false)}
                 >
-                    운동 기록하기
+                    + 운동 기록하기
                 </button>
 
                 {/* 운동 추가/수정 입력 모달 */}
@@ -185,14 +185,14 @@ export default function MyPage() {
                 {workoutData?.feedback && (
                     <div className="space-y-4">
                         <FeedbackCard feedback={workoutData.feedback} />
-                        <div className="flex justify-end gap-2 px-2">
+                        <div className="flex justify-end gap-2">
                             <button
                                 onClick={() => openAddModal(true, {
                                     name: workoutData.name,
                                     targetMuscle: workoutData.targetMuscle,
                                     feedback: workoutData.feedback,
                                 })}
-                                className="px-4 py-2 bg-yellow-400 text-white font-semibold rounded"
+                                className="px-5 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-lg shadow-lg transition"
                             >
                                 수정
                             </button>
@@ -214,7 +214,7 @@ export default function MyPage() {
                                         }
                                     }
                                 }}
-                                className="px-4 py-2 bg-red-500 text-white font-semibold rounded"
+                                className="px-5 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg shadow-lg transition"
                             >
                                 삭제
                             </button>
@@ -224,26 +224,32 @@ export default function MyPage() {
 
                 {/* 운동 기록 리스트 표시 */}
                 {Array.isArray(workoutData) && workoutData.length > 0 && (
-                    <div className="mt-4 space-y-3">
-                        <h3 className="font-bold text-lg mb-2">운동 기록</h3>
+                    <div className="space-y-3">
+                        <h3 className="font-bold text-xl mb-3 text-purple-300">운동 기록</h3>
                         {workoutData.map((log, idx) => (
-                            <div key={idx} className="bg-white rounded-lg shadow p-3 flex flex-col gap-1 relative">
+                            <div key={idx} className="bg-white/10 backdrop-blur-lg rounded-xl shadow-xl p-4 border border-white/20 relative hover:border-purple-400 transition">
                                 <button
-                                    className="absolute top-2 right-2 text-red-500 font-bold"
+                                    className="absolute top-3 right-3 text-red-400 hover:text-red-300 font-bold text-sm"
                                     onClick={() => handleDeleteLog(log, idx)}
                                 >
-                                    삭제
+                                    ✕
                                 </button>
-                                <div className="font-semibold">{log.name}</div>
-                                <div className="text-sm text-gray-600">
-                                    {log.log_type === "ROUTINE" ? "루틴 기록" : "운동 기록"}
+                                <div className="font-bold text-lg mb-2">{log.name}</div>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className={`text-xs px-2 py-1 rounded-full ${
+                                        log.log_type === "ROUTINE" 
+                                            ? "bg-purple-600/50 text-purple-200" 
+                                            : "bg-indigo-600/50 text-indigo-200"
+                                    }`}>
+                                        {log.log_type === "ROUTINE" ? "루틴 기록" : "운동 기록"}
+                                    </span>
                                 </div>
-                                <div className="text-xs text-gray-400">
-                                    날짜: {log.performed_date}
+                                <div className="text-sm text-gray-300">
+                                    📅 {log.performed_date}
                                 </div>
                                 {log.target_muscle && (
-                                    <div className="text-xs text-gray-500">
-                                        타겟 근육: {log.target_muscle}
+                                    <div className="text-sm text-purple-300 mt-1">
+                                        💪 {log.target_muscle}
                                     </div>
                                 )}
                             </div>
