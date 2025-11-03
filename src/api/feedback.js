@@ -1,4 +1,4 @@
-import api from "./apiDev";
+import api from "./api";
 
 export const uploadExerciseVideo = async ({ userId, exerciseId, video, isPortrait, performedDate, level }) => {
     const formData = new FormData();

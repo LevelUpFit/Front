@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Camera } from "lucide-react";
 import { createRoutine, patchRoutine, getRoutineById } from "../../api/routine";
 import useUserStore from "../../stores/userStore";
+import Layout from "../../components/Layout";
 
 import backImg from "../../assets/back.png";
 import chestImg from "../../assets/chest.png";
@@ -40,13 +41,6 @@ export default function RoutineEditor() {
             fetch();
         }
     }, [id, isEdit, getUserId]);
-
-    // 운동 추가
-    const handleAddExercises = (ids) => {
-        const selected = allExercises.filter((ex) => ids.includes(ex.id));
-        setRoutineExercises((prev) => [...prev, ...selected]);
-        setShowAddModal(false);
-    };
 
     // 저장 버튼 클릭 시
     const handleGoToSetEditor = async () => {
@@ -99,75 +93,97 @@ export default function RoutineEditor() {
     ];
 
     return (
-        <div className="min-h-screen bg-white">
-            {/* 상단 파란 헤더 */}
-            <div className="bg-blue-600 px-4 py-4 rounded-b-2xl relative">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <button onClick={() => navigate(-1)} className="text-white text-2xl">◀</button>
-                        <span className="text-white text-lg font-bold">{routineName}</span>
-                        <span>✏️</span>
-                    </div>
-                    <div className="w-12 h-12 border-2 border-white rounded-full flex items-center justify-center">
-                        <Camera className="text-white w-6 h-6" />
-                    </div>
-                </div>
-                <div className="text-white text-sm mt-1">{isEdit ? "수정 모드" : "편집 모드"}</div>
-            </div>
-
-            {/* 운동 카드 리스트 */}
-            <div className="px-4 py-4 space-y-4">
-                {routineExercises.map((ex) => (
-                    <div key={ex.id} className="bg-gray-50 rounded-xl p-4 flex gap-4 items-center">
-                        <img src={ex.thumbnailUrl} alt={ex.name} className="w-16 h-16 object-contain" />
-                        <div>
-                            <div className="font-bold">{ex.name}</div>
-                            <div className="text-gray-500">{ex.targetMuscle}</div>
+        <Layout>
+            <div className="space-y-6">
+                <div className="rounded-3xl border border-white/20 bg-white/10 p-6 shadow-2xl backdrop-blur-lg">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3 text-white">
+                            <button
+                                type="button"
+                                onClick={() => navigate(-1)}
+                                className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/10 text-lg font-bold hover:bg-white/20"
+                            >
+                                ◀
+                            </button>
+                            <div>
+                                <div className="text-xl font-bold">{routineName}</div>
+                                <div className="text-sm text-purple-200">{isEdit ? "루틴 수정" : "새 루틴 만들기"}</div>
+                            </div>
+                            <span className="text-xl">✏️</span>
+                        </div>
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white">
+                            <Camera className="h-6 w-6" />
                         </div>
                     </div>
-                ))}
-            </div>
+                </div>
 
-            {/* 이름 입력 필드 */}
-            <div className="flex justify-center items-center gap-2 px-4 py-4">
-                <input
-                    value={routineName}
-                    onChange={(e) => setRoutineName(e.target.value)}
-                    maxLength={30}
-                    className="flex-1 border px-4 py-2 rounded-full text-lg bg-gray-100"
-                />
-                <span className="text-gray-500">{routineName.length}/30</span>
-            </div>
+                {routineExercises.length > 0 && (
+                    <div className="space-y-3">
+                        {routineExercises.map((ex) => (
+                            <div
+                                key={ex.id}
+                                className="flex items-center gap-4 rounded-2xl border border-white/15 bg-white/10 p-4 text-white shadow-lg backdrop-blur-lg"
+                            >
+                                <img src={ex.thumbnailUrl} alt={ex.name} className="h-16 w-16 object-contain" />
+                                <div className="min-w-0">
+                                    <div className="truncate text-lg font-semibold">{ex.name}</div>
+                                    <div className="text-sm text-purple-200">{ex.targetMuscle}</div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
 
-            <div className="flex justify-center gap-4 py-4">
-                {muscleOptions.map((item) => (
-                    <button
-                        key={item.label}
-                        onClick={() => setSelectedPart(item.label)}
-                        className={`w-20 h-20 flex items-center justify-center rounded-full overflow-hidden
-            ${selectedPart === item.label ? "ring-4 ring-black" : ""}`}
-                    >
-                        <img
-                            src={item.img}
-                            alt={item.label}
-                            className="w-full h-full object-contain"
+                <div className="rounded-3xl border border-white/20 bg-white/10 p-5 shadow-2xl backdrop-blur-lg">
+                    <label className="block text-sm font-semibold text-purple-200">루틴 이름</label>
+                    <div className="mt-3 flex items-center gap-3">
+                        <input
+                            value={routineName}
+                            onChange={(e) => setRoutineName(e.target.value)}
+                            maxLength={30}
+                            className="flex-1 rounded-full border border-white/20 bg-black/20 px-5 py-3 text-base text-white placeholder:text-gray-400 focus:border-purple-400 focus:outline-none"
                         />
-                    </button>
-                ))}
-            </div>
+                        <span className="text-sm text-gray-300">{routineName.length}/30</span>
+                    </div>
+                </div>
 
-            {/* 저장/취소 버튼 */}
-            <div className="flex justify-between px-8 mt-6">
-                <button onClick={() => navigate("/routine")} className="text-lg text-gray-600">
-                    취소
-                </button>
-                <button
-                    onClick={handleGoToSetEditor}
-                    className="text-lg text-blue-600 font-bold"
-                >
-                    저장
-                </button>
+                <div className="rounded-3xl border border-white/20 bg-white/10 p-5 shadow-2xl backdrop-blur-lg">
+                    <p className="text-sm font-semibold text-purple-200">타겟 부위 선택</p>
+                    <div className="mt-4 flex flex-wrap justify-center gap-4">
+                        {muscleOptions.map((item) => (
+                            <button
+                                key={item.label}
+                                type="button"
+                                onClick={() => setSelectedPart(item.label)}
+                                className={`flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border transition ${
+                                    selectedPart === item.label
+                                        ? "border-purple-400 bg-purple-500/30"
+                                        : "border-white/20 bg-white/10 hover:border-purple-300"
+                                }`}
+                            >
+                                <img src={item.img} alt={item.label} className="h-full w-full object-contain" />
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-4">
+                    <button
+                        type="button"
+                        onClick={() => navigate("/routine")}
+                        className="flex-1 rounded-full border border-white/20 bg-white/5 py-3 text-base font-semibold text-gray-200 transition hover:bg-white/10"
+                    >
+                        취소
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleGoToSetEditor}
+                        className="flex-1 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 py-3 text-base font-bold text-white shadow-lg transition-transform duration-300 hover:scale-105"
+                    >
+                        저장
+                    </button>
+                </div>
             </div>
-        </div>
+        </Layout>
     );
 }

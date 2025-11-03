@@ -1,0 +1,131 @@
+/* Calendar Dark Theme Customization */
+.calendar-dark-theme .react-calendar {
+    background: transparent;
+    border: none;
+    color: white;
+    width: 100%;
+    font-family: inherit;
+}
+
+.calendar-dark-theme .react-calendar__navigation {
+    display: flex;
+    height: 44px;
+    margin-bottom: 1em;
+}
+
+.calendar-dark-theme .react-calendar__navigation button {
+    color: white;
+    min-width: 44px;
+    background: rgba(147, 51, 234, 0.2);
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+}
+
+.calendar-dark-theme .react-calendar__navigation button:enabled:hover,
+.calendar-dark-theme .react-calendar__navigation button:enabled:focus {
+    background-color: rgba(147, 51, 234, 0.4);
+}
+
+.calendar-dark-theme .react-calendar__navigation button[disabled] {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.calendar-dark-theme .react-calendar__month-view__weekdays {
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 0.75em;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.calendar-dark-theme .react-calendar__month-view__weekdays__weekday {
+    padding: 0.5em;
+}
+
+.calendar-dark-theme .react-calendar__month-view__weekdays abbr {
+    text-decoration: none;
+}
+
+.calendar-dark-theme .react-calendar__tile {
+    max-width: 100%;
+    padding: 10px 6.6667px;
+    background: transparent;
+    text-align: center;
+    line-height: 16px;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    margin: 2px;
+}
+
+.calendar-dark-theme .react-calendar__tile:enabled:hover,
+.calendar-dark-theme .react-calendar__tile:enabled:focus {
+    background-color: rgba(147, 51, 234, 0.3);
+}
+
+.calendar-dark-theme .react-calendar__tile--active {
+    background: linear-gradient(135deg, #9333ea 0%, #6366f1 100%) !important;
+    color: white;
+    font-weight: bold;
+}
+
+.calendar-dark-theme .react-calendar__tile--active:enabled:hover,
+.calendar-dark-theme .react-calendar__tile--active:enabled:focus {
+    background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%) !important;
+}
+
+.calendar-dark-theme .react-calendar__tile--now {
+    background: rgba(99, 102, 241, 0.2);
+    border: 1px solid rgba(99, 102, 241, 0.5);
+}
+
+.calendar-dark-theme .react-calendar__tile--now:enabled:hover,
+.calendar-dark-theme .react-calendar__tile--now:enabled:focus {
+    background: rgba(99, 102, 241, 0.3);
+}
+
+.calendar-dark-theme .react-calendar__tile:disabled {
+    background-color: transparent;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* 운동한 날 표시 - 기존 로직 유지 */
+.calendar-dark-theme .workout-day {
+    background: rgba(59, 130, 246, 0.3) !important;
+    border: 2px solid rgba(59, 130, 246, 0.6);
+    font-weight: bold;
+    color: rgb(147, 197, 253) !important;
+}
+
+.calendar-dark-theme .workout-day:hover {
+    background: rgba(59, 130, 246, 0.5) !important;
+}
+
+/* 선택된 운동한 날 */
+.calendar-dark-theme .react-calendar__tile--active.workout-day {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+    color: white !important;
+}
+
+/* ====== 달력은 무조건 7칸 ====== */
+.calendar-dark-theme .react-calendar__month-view__weekdays,
+.calendar-dark-theme .react-calendar__month-view__days {
+    display: grid !important;
+    grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+}
+
+/* 타일이 7칸에 꽉 차도록 */
+.calendar-dark-theme .react-calendar__tile {
+    width: 100% !important;
+    box-sizing: border-box;
+}
+
+
+/* ====== 현재 달이 아닌 날짜 흐리게 표시 ====== */
+.calendar-dark-theme .react-calendar__month-view__days__day--neighboringMonth {
+    opacity: 0.3;
+    color: rgba(255, 255, 255, 0.4);
+}

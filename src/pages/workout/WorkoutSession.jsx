@@ -4,9 +4,43 @@ import Layout from "../../components/Layout";
 import useUserStore from "../../stores/userStore";
 import { getRoutineExercises, getExerciseById } from "../../api/exercise";
 import defaultImg from "../../assets/default.png";
-import setCheck from "../../assets/set-check.png";
 import { saveRoutineLog } from "../../api/userlog";
+
 const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
+
+function SetCheckIcon() {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6 text-green-400"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+        >
+            <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                clipRule="evenodd"
+            />
+        </svg>
+    );
+}
+
+function CurrentSetIcon() {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5 text-purple-300"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+        >
+            <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                clipRule="evenodd"
+            />
+        </svg>
+    );
+}
 
 export default function WorkoutSession() {
     const { routineId } = useParams();
@@ -18,11 +52,14 @@ export default function WorkoutSession() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [sets, setSets] = useState([]);
     const [currentSetIndex, setCurrentSetIndex] = useState(0);
+    const [startTime, setStartTime] = useState(null);
 
     // 스크롤 ref 추가
     const listRef = useRef(null);
 
     useEffect(() => {
+        setStartTime(new Date());
+
         const fetchExercises = async () => {
             try {
                 const res = await getRoutineExercises(routineId);
@@ -63,49 +100,71 @@ export default function WorkoutSession() {
     }, [routineId]);
 
     const addSet = (exerciseIdx) => {
-        setSets(prev => {
-            const updated = [...prev];
+        setSets((prev) => {
+            const updated = prev.map((exerciseSets) => exerciseSets.map((set) => ({ ...set })));
             const currentExerciseSets = updated[exerciseIdx];
-            const newSet = {
-                set: currentExerciseSets.length + 1,
+            const lastSet = currentExerciseSets[currentExerciseSets.length - 1] || {
                 weight: 30,
                 reps: 12,
-                done: false
             };
-            updated[exerciseIdx] = [...currentExerciseSets, newSet];
+            currentExerciseSets.push({
+                set: currentExerciseSets.length + 1,
+                weight: lastSet.weight,
+                reps: lastSet.reps,
+                done: false,
+            });
             return updated;
         });
     };
 
-    // 다음 세트/운동 이동 로직 (예시: 현재 운동/세트만 관리)
+    const handleSetChange = (exerciseIdx, setIdx, field, value) => {
+        setSets((prev) => {
+            const updated = prev.map((exerciseSets) => exerciseSets.map((set) => ({ ...set })));
+            const numericValue = value === "" ? "" : Number(value);
+            updated[exerciseIdx][setIdx][field] = numericValue;
+            return updated;
+        });
+    };
+
     const handleNextSet = async () => {
         if (sets.length === 0) return;
 
-        setSets(prev => {
-            const updated = prev.map(arr => [...arr]);
-            updated[currentIndex][currentSetIndex].done = true;
-            return updated;
-        });
+        const updatedSets = sets.map((exerciseSets) =>
+            exerciseSets.map((set) => ({ ...set }))
+        );
+        updatedSets[currentIndex][currentSetIndex].done = true;
+        setSets(updatedSets);
 
-        if (currentSetIndex < sets[currentIndex].length - 1) {
-            setCurrentSetIndex(currentSetIndex + 1);
+        if (currentSetIndex < updatedSets[currentIndex].length - 1) {
+            setCurrentSetIndex((prevIdx) => prevIdx + 1);
         } else if (currentIndex < exercises.length - 1) {
-            setCurrentIndex(currentIndex + 1);
+            setCurrentIndex((prevIdx) => prevIdx + 1);
             setCurrentSetIndex(0);
         } else {
-            // 마지막 세트/운동에서 저장
             try {
-                // userId와 performedDate는 실제 값으로 대체 필요
                 const userId = getUserId();
-                // 한국 시간 기준 YYYY-MM-DD
                 const performedDate = new Date(Date.now() + 9 * 60 * 60 * 1000)
                     .toISOString()
                     .slice(0, 10);
-                const res = await saveRoutineLog(userId, routineId, performedDate);
+                await saveRoutineLog(userId, routineId, performedDate);
             } catch (err) {
-                alert("운동 기록 저장에 실패했습니다.");
+                console.error("운동 기록 저장에 실패했습니다.");
             }
-            navigate("/workout/summary");
+
+            const summaryExercises = exercises.map((exercise, exerciseIdx) => ({
+                ...exerciseDetails[exercise.exerciseId],
+                sets: updatedSets[exerciseIdx].filter((set) => set.done),
+            }));
+
+            navigate("/workout/summary", {
+                state: {
+                    exercises: summaryExercises,
+                    startTime,
+                    endTime: new Date(),
+                    muscle:
+                        exerciseDetails[exercises[0].exerciseId]?.targetMuscle || "운동",
+                },
+            });
         }
     };
 
@@ -120,84 +179,124 @@ export default function WorkoutSession() {
         }
     }, [currentIndex, currentSetIndex]);
 
-    if (!exercises.length) return <Layout>로딩 중...</Layout>;
+    if (!exercises.length || sets.length === 0) {
+        return (
+            <Layout>
+                <div className="flex min-h-[60vh] items-center justify-center text-gray-300">
+                    로딩 중...
+                </div>
+            </Layout>
+        );
+    }
+
+    const currentExerciseDetail = exerciseDetails[exercises[currentIndex].exerciseId];
 
     return (
         <Layout>
-            <div className="max-w-md mx-auto min-h-screen flex flex-col relative">
-                {/* 운동 전체 리스트 스크롤 영역 */}
-                <div className="flex-1 overflow-y-auto pb-32 mt-6" ref={listRef}>
+            <div className="relative mx-auto flex min-h-full max-w-md flex-col p-4">
+                <header className="mb-4 flex items-center justify-between py-2">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="rounded-full border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20"
+                        aria-label="뒤로 가기"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <div className="text-center">
+                        <h1 className="max-w-[240px] truncate text-xl font-bold text-white">
+                            {currentExerciseDetail?.name || "운동 중"}
+                        </h1>
+                        <div className="text-sm text-purple-300">
+                            {currentIndex + 1} / {exercises.length}
+                        </div>
+                    </div>
+                    <div className="w-10" />
+                </header>
+
+                <div className="flex-1 overflow-y-auto pb-36" ref={listRef}>
                     {exercises.map((ex, exIdx) => {
                         const detail = exerciseDetails[ex.exerciseId];
+                        const isCurrentExercise = exIdx === currentIndex;
                         return (
                             <div
                                 key={ex.id}
-                                data-ex-idx={exIdx} // 스크롤 타겟용
-                                className={`bg-white rounded-xl shadow flex flex-col items-center gap-2 p-4 mb-4 ${
-                                    exIdx === currentIndex ? "border-2 border-blue-500" : ""
+                                data-ex-idx={exIdx}
+                                className={`mb-4 flex flex-col items-center gap-2 rounded-2xl border bg-white/10 p-4 shadow-xl backdrop-blur-lg transition-all ${
+                                    isCurrentExercise
+                                        ? "border-purple-400"
+                                        : "border-white/20 opacity-70"
                                 }`}
                             >
-                                <div className="flex items-center gap-4 w-full">
+                                <div className="flex w-full items-center gap-4">
                                     <img
                                         src={IMAGE_BASE_URL + (detail?.thumbnailUrl || "") || defaultImg}
                                         alt={detail?.name || "운동"}
-                                        className="w-16 h-16 object-contain"
+                                        className="h-16 w-16 rounded-lg bg-white/10 object-contain"
                                     />
                                     <div>
-                                        <div className="font-semibold text-lg mb-1">
+                                        <div className="mb-1 text-lg font-semibold text-white">
                                             {detail?.name || `운동 ID: ${ex.exerciseId}`}
                                         </div>
-                                        <div className="text-gray-700">{detail?.targetMuscle}</div>
+                                        <div className="text-sm text-gray-300">{detail?.targetMuscle}</div>
                                     </div>
                                 </div>
-                                {/* 세트 리스트 */}
-                                <div className="w-full mt-2">
-                                    {sets[exIdx] &&
-                                        sets[exIdx].map((set, idx) => {
-                                            const isCurrent = exIdx === currentIndex && idx === currentSetIndex;
-                                            const isDone = set.done;
+                                <div className="mt-2 w-full space-y-2">
+                                    {sets[exIdx]?.map((set, idx) => {
+                                        const isCurrentSet = isCurrentExercise && idx === currentSetIndex;
+                                        const isDone = set.done;
 
-                                            return (
-                                                <div
-                                                    key={idx}
-                                                    className={`flex items-center justify-between mb-2 last:mb-0 px-2 py-2 rounded-lg border
-                                                        ${isDone
-                                                            ? "border-green-300 bg-green-100 text-green-800"
-                                                            : isCurrent
-                                                            ? "border-blue-500 bg-blue-100"
-                                                            : "border-gray-200 bg-gray-100"
-                                                        }`}
-                                                >
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="flex items-center justify-center w-6 h-6">
-                                                            {isDone
-                                                                ? (
-                                                                    <img
-                                                                        src={setCheck}
-                                                                        alt="완료"
-                                                                        className="w-6 h-6 object-contain rounded-full"
-                                                                    />
-                                                                )
-                                                                : isCurrent
-                                                                ? "▶"
-                                                                : "○"}
-                                                        </span>
-                                                        <span className="font-bold">{set.set}</span>
-                                                        <span className={`px-2 py-1 rounded font-bold mx-1 bg-white ${isDone ? "text-green-600" : "text-black"}`}>
-                                                            {set.weight}
-                                                        </span>
-                                                        <span className="font-bold">KG</span>
-                                                        <span className={`px-2 py-1 rounded font-bold mx-1 bg-white ${isDone ? "text-green-600" : "text-black"}`}>
-                                                            {set.reps}
-                                                        </span>
-                                                        <span className="font-bold">회</span>
-                                                    </div>
+                                        return (
+                                            <div
+                                                key={idx}
+                                                className={`flex items-center gap-2 rounded-lg border p-2 transition ${
+                                                    isDone
+                                                        ? "border-green-500/50 bg-green-600/30"
+                                                        : isCurrentSet
+                                                        ? "border-purple-400 bg-purple-600/30"
+                                                        : "border-transparent bg-white/10"
+                                                }`}
+                                            >
+                                                <div className="flex h-6 w-6 items-center justify-center">
+                                                    {isDone ? (
+                                                        <SetCheckIcon />
+                                                    ) : isCurrentSet ? (
+                                                        <CurrentSetIcon />
+                                                    ) : (
+                                                        <span className="text-sm text-gray-400">{idx + 1}</span>
+                                                    )}
                                                 </div>
-                                            );
-                                        })}
+                                                <input
+                                                    type="number"
+                                                    value={set.weight}
+                                                    onChange={(e) =>
+                                                        handleSetChange(exIdx, idx, "weight", e.target.value)
+                                                    }
+                                                    className="w-16 rounded-md border-none bg-white/20 py-1 text-center text-lg font-bold text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                                                />
+                                                <span className="text-lg font-semibold text-gray-300">KG</span>
+                                                <input
+                                                    type="number"
+                                                    value={set.reps}
+                                                    onChange={(e) =>
+                                                        handleSetChange(exIdx, idx, "reps", e.target.value)
+                                                    }
+                                                    className="w-16 rounded-md border-none bg-white/20 py-1 text-center text-lg font-bold text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                                                />
+                                                <span className="text-lg font-semibold text-gray-300">회</span>
+                                            </div>
+                                        );
+                                    })}
                                     <button
                                         onClick={() => addSet(exIdx)}
-                                        className="w-full text-center text-gray-600 py-2 mt-2 bg-gray-100 rounded"
+                                        className="mt-2 w-full rounded-lg bg-white/10 py-2 text-center text-gray-300 transition hover:bg-white/20"
                                     >
                                         + 세트 추가
                                     </button>
@@ -206,11 +305,10 @@ export default function WorkoutSession() {
                         );
                     })}
                 </div>
-                {/* 하단 고정 버튼 */}
-                <div className="fixed bottom-11 left-0 w-full max-w-md mx-auto px-4 pb-4 z-10">
+                <div className="fixed bottom-24 left-1/2 z-40 w-full max-w-md -translate-x-1/2 px-4">
                     <button
                         onClick={handleNextSet}
-                        className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg shadow"
+                        className="w-full transform rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 py-4 text-lg font-bold text-white shadow-lg transition duration-300 hover:scale-105"
                     >
                         {currentSetIndex < sets[currentIndex]?.length - 1
                             ? "다음 세트"
