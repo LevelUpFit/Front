@@ -51,30 +51,37 @@ export default function ExerciseSelectModal({
     const modalMaxHeight = `${heightPercent}vh`;
 
     return (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-30 flex justify-center items-end">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm">
             <div
-                className="w-full max-w-md bg-white rounded-t-2xl p-4 shadow-lg animate-slide-up flex flex-col"
+                className="flex w-full max-w-md flex-col rounded-t-3xl border border-white/20 bg-gray-900/95 p-5 shadow-2xl animate-slide-up"
                 style={{ maxHeight: modalMaxHeight }}
             >
-                <div className="flex justify-between items-center mb-4">
+                <div className="mb-4 flex items-center justify-between text-white">
                     <span className="text-lg font-bold">운동 추가</span>
-                    <button onClick={onClose}>✕</button>
+                    <button
+                        onClick={onClose}
+                        className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-sm text-gray-200 transition hover:bg-white/20"
+                    >
+                        닫기
+                    </button>
                 </div>
                 {/* 부위별 필터 콤보박스 */} 
-                <div className="mb-3 relative">
+                <div className="relative mb-3">
                     <button
-                        className="w-full border rounded-lg px-3 py-2 text-left bg-gray-50"
+                        className="w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-left text-sm font-medium text-white transition hover:border-purple-300"
                         onClick={() => setShowDropdown(v => !v)}
                     >
                         {muscleOptions.find(opt => opt.value === filter)?.label || "전체"}
-                        <span className="float-right">&#9660;</span>
+                        <span className="float-right text-xs text-purple-200">▼</span>
                     </button>
                     {showDropdown && (
-                        <div className="absolute left-0 right-0 bg-white border rounded-lg mt-1 z-10 max-h-48 overflow-y-auto">
+                        <div className="absolute left-0 right-0 z-10 mt-2 max-h-48 overflow-y-auto rounded-xl border border-white/20 bg-gray-900/95 shadow-lg">
                             {muscleOptions.map(opt => (
                                 <div
                                     key={opt.value}
-                                    className={`px-3 py-2 cursor-pointer hover:bg-blue-100 ${filter === opt.value ? "font-bold text-blue-600" : ""}`}
+                                    className={`px-4 py-2 text-sm text-gray-200 transition hover:bg-white/10 ${
+                                        filter === opt.value ? "text-purple-300" : ""
+                                    }`}
                                     onClick={() => {
                                         setFilter(opt.value);
                                         setShowDropdown(false);
@@ -87,13 +94,11 @@ export default function ExerciseSelectModal({
                     )}
                 </div>
                 <div
-                    className="overflow-y-auto flex-1"
+                    className="flex-1 overflow-y-auto"
                     style={{ maxHeight: `calc(${modalMaxHeight} - 150px)` }}
                 >
                     {filteredExercises.length === 0 ? (
-                        <div
-                            className="text-center text-gray-400 py-10"
-                        >
+                        <div className="py-10 text-center text-gray-400">
                             운동이 없습니다.
                         </div>
                     ) : (
@@ -102,9 +107,11 @@ export default function ExerciseSelectModal({
                             return (
                                 <div
                                     key={ex.id}
-                                    className={`flex items-center gap-4 py-5 px-5 mb-3 rounded-lg cursor-pointer transition-colors
-                                        ${isSelected ? "bg-blue-100 border border-blue-400" : "bg-gray-50 border"}
-                                    `}
+                                    className={`mb-3 flex items-center gap-4 rounded-2xl border px-5 py-4 transition ${
+                                        isSelected
+                                            ? "border-purple-400 bg-purple-500/30"
+                                            : "border-white/15 bg-white/5 hover:border-purple-300"
+                                    } cursor-pointer`}
                                     style={{
                                         borderWidth: isSelected ? 2 : 1,
                                     }}
@@ -113,10 +120,11 @@ export default function ExerciseSelectModal({
                                     <img
                                         src={IMAGE_BASE_URL + ex.thumbnailUrl}
                                         alt={ex.name}
-                                        className="w-24 h-24 object-contain"
+                                        className="h-20 w-20 rounded-2xl border border-white/10 bg-black/10 object-cover"
                                     />
-                                    <div className="flex-1">
-                                        <div className="font-semibold text-lg">{ex.name}</div>
+                                    <div className="flex-1 text-white">
+                                        <div className="text-lg font-semibold">{ex.name}</div>
+                                        <div className="text-sm text-purple-200">{ex.targetMuscle}</div>
                                     </div>
                                 </div>
                             );
@@ -124,7 +132,7 @@ export default function ExerciseSelectModal({
                     )}
                 </div>
                 <button
-                    className="w-full bg-blue-600 text-white rounded py-3 font-bold mt-4"
+                    className="mt-4 w-full rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 py-3 text-base font-bold text-white shadow-lg transition-transform duration-300 hover:scale-105 disabled:cursor-not-allowed disabled:opacity-60"
                     onClick={handleAdd}
                     disabled={selected.length === 0}
                 >

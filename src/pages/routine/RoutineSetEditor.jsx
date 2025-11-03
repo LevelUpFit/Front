@@ -1,9 +1,9 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import ExerciseSelectModal from "./ExerciseSelectModal";
-import { createRoutinesExercise } from "../../api/routine";
 import { getRoutineExercises, patchRoutinesExercise, getAllExercises } from "../../api/exercise";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import Layout from "../../components/Layout";
 
 // StrictModeDroppable 컴포넌트 추가
 const StrictModeDroppable = ({ children, ...props }) => {
@@ -197,135 +197,130 @@ export default function RoutineSetEditor() {
     };
 
     return (
-        <div className="min-h-screen bg-[#f3f4f8] px-4 py-6">
-            {/* 상단 루틴 정보 */}
-            <div className="flex items-center gap-4 mb-6">
-                {thumbnailUrl && (
-                    <img
-                        src={thumbnailUrl}
-                        alt="루틴 썸네일"
-                        className="w-16 h-16 object-contain rounded-full bg-gray-100"
+        <Layout>
+            <div className="space-y-6">
+                <div className="flex items-center gap-4 rounded-3xl border border-white/20 bg-white/10 p-5 text-white shadow-2xl backdrop-blur-lg">
+                    {thumbnailUrl && (
+                        <img
+                            src={thumbnailUrl}
+                            alt="루틴 썸네일"
+                            className="h-16 w-16 rounded-full border border-white/20 object-cover"
+                        />
+                    )}
+                    <div>
+                        <div className="text-xl font-bold">{name || "루틴 이름"}</div>
+                        {targetMuscle && <div className="text-sm text-purple-200">{targetMuscle}</div>}
+                    </div>
+                </div>
+                <DragDropContext onDragEnd={handleDragEnd}>
+                    <StrictModeDroppable droppableId="exercise-list">
+                        {(provided) => (
+                            <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-6">
+                                {exerciseSets.map((ex, exIdx) => (
+                                    <Draggable key={ex.exerciseId} draggableId={String(ex.exerciseId)} index={exIdx}>
+                                        {(provided, snapshot) => (
+                                            <div
+                                                ref={provided.innerRef}
+                                                {...provided.draggableProps}
+                                                className={`overflow-hidden rounded-3xl border border-white/15 bg-white/10 shadow-2xl backdrop-blur-lg transition ${
+                                                    snapshot.isDragging ? "ring-2 ring-purple-400" : ""
+                                                }`}
+                                            >
+                                                <div className="relative flex items-center gap-4 border-b border-white/10 bg-white/5 px-6 pb-4 pt-6 text-white">
+                                                    <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-black/20">
+                                                        <img
+                                                            src={IMAGE_BASE_URL + ex.thumbnailUrl}
+                                                            alt={ex.name}
+                                                            className="h-full w-full object-cover"
+                                                        />
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <div className="truncate text-2xl font-bold">{ex.name}</div>
+                                                        <div className="text-sm text-purple-200">{ex.targetMuscle}</div>
+                                                    </div>
+                                                    <div
+                                                        {...provided.dragHandleProps}
+                                                        className="absolute right-4 top-4 cursor-grab rounded-full border border-white/10 bg-white/10 p-2 text-white transition hover:bg-white/20 active:cursor-grabbing"
+                                                    >
+                                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                                                            <rect y="4" width="24" height="2" rx="1" fill="currentColor" />
+                                                            <rect y="11" width="24" height="2" rx="1" fill="currentColor" />
+                                                            <rect y="18" width="24" height="2" rx="1" fill="currentColor" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-3 px-4 py-5">
+                                                    {ex.sets.map((set, setIdx) => (
+                                                        <div
+                                                            key={setIdx}
+                                                            className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white"
+                                                        >
+                                                            <span className="w-6 text-center text-lg font-bold">{setIdx + 1}</span>
+                                                            <input
+                                                                type="number"
+                                                                value={set.weight}
+                                                                onChange={(e) => handleSetChange(exIdx, setIdx, "weight", e.target.value)}
+                                                                className="w-16 rounded-xl border border-white/10 bg-black/30 px-2 py-2 text-center text-base font-semibold text-white focus:border-purple-400 focus:outline-none"
+                                                            />
+                                                            <span className="text-sm font-semibold">KG</span>
+                                                            <input
+                                                                type="number"
+                                                                value={set.reps}
+                                                                onChange={(e) => handleSetChange(exIdx, setIdx, "reps", e.target.value)}
+                                                                className="w-14 rounded-xl border border-white/10 bg-black/30 px-2 py-2 text-center text-base font-semibold text-white focus:border-purple-400 focus:outline-none"
+                                                            />
+                                                            <span className="text-sm font-semibold">회</span>
+                                                            {setIdx > 0 && (
+                                                                <button
+                                                                    type="button"
+                                                                    className="ml-auto rounded-full border border-white/10 bg-white/10 px-3 py-1 text-sm text-gray-200 transition hover:bg-red-500/40"
+                                                                    onClick={() => handleRemoveSet(exIdx, setIdx)}
+                                                                >
+                                                                    삭제
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                    <button
+                                                        className="w-full rounded-2xl border border-dashed border-purple-300 bg-purple-500/10 py-3 text-sm font-semibold text-purple-100 transition hover:bg-purple-500/20"
+                                                        onClick={() => handleAddSet(exIdx)}
+                                                    >
+                                                        + 세트 추가
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </Draggable>
+                                ))}
+                                {provided.placeholder}
+                            </div>
+                        )}
+                    </StrictModeDroppable>
+                </DragDropContext>
+                <div className="space-y-3">
+                    <button
+                        className="w-full rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 py-3 text-lg font-bold text-white shadow-lg transition-transform duration-300 hover:scale-105"
+                        onClick={() => setShowModal(true)}
+                    >
+                        운동 추가
+                    </button>
+                    <button
+                        className="w-full rounded-full bg-gradient-to-r from-indigo-500 to-blue-500 py-3 text-lg font-bold text-white shadow-lg transition-transform duration-300 hover:scale-105"
+                        onClick={handleSave}
+                    >
+                        저장
+                    </button>
+                </div>
+                {showModal && (
+                    <ExerciseSelectModal
+                        onClose={() => setShowModal(false)}
+                        onSelect={handleAddExercises}
+                        alreadySelected={alreadySelected}
+                        initialSelected={alreadySelected}
+                        heightPercent={80}
                     />
                 )}
-                <div>
-                    <div className="text-xl font-bold">{name || "루틴 이름"}</div>
-                    {targetMuscle && (
-                        <div className="text-blue-600 font-semibold">{targetMuscle}</div>
-                    )}
-                </div>
             </div>
-            {/* 드래그 앤 드롭 영역 */}
-            <DragDropContext onDragEnd={handleDragEnd}>
-                <StrictModeDroppable droppableId="exercise-list">
-                    {(provided) => (
-                        <div ref={provided.innerRef} {...provided.droppableProps}>
-                            {exerciseSets.map((ex, exIdx) => (
-                                <Draggable key={ex.exerciseId} draggableId={String(ex.exerciseId)} index={exIdx}>
-                                    {(provided, snapshot) => (
-                                        <div
-                                            ref={provided.innerRef}
-                                            {...provided.draggableProps}
-                                            className={`mb-8 bg-white rounded-3xl border border-gray-200 ${
-                                                snapshot.isDragging ? "ring-2 ring-blue-400" : "shadow"
-                                            } p-0`}
-                                        >
-                                            {/* 상단: 이미지와 운동명 + 햄버거 드래그 핸들 */}
-                                            <div className="flex items-center gap-4 bg-white px-6 pt-6 pb-2 rounded-t-3xl relative border-b border-gray-100">
-                                                <img
-                                                    src={IMAGE_BASE_URL + ex.thumbnailUrl}
-                                                    alt={ex.name}
-                                                    className="w-28 h-28 object-contain"
-                                                    style={{ background: "#f3f3f3", borderRadius: 16 }}
-                                                />
-                                                <div>
-                                                    <div className="font-bold text-2xl mb-1">{ex.name}</div>
-                                                    <div className="text-gray-600 text-lg">{ex.targetMuscle}</div>
-                                                </div>
-                                                {/* 햄버거 드래그 핸들 (우측 상단) */}
-                                                <div
-                                                    {...provided.dragHandleProps}
-                                                    className="absolute top-4 right-4 cursor-grab active:cursor-grabbing"
-                                                    style={{ padding: 8 }}
-                                                >
-                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                                        <rect y="4" width="24" height="2" rx="1" fill="#888" />
-                                                        <rect y="11" width="24" height="2" rx="1" fill="#888" />
-                                                        <rect y="18" width="24" height="2" rx="1" fill="#888" />
-                                                    </svg>
-                                                </div>
-                                            </div>
-                                            {/* 세트 입력 */}
-                                            <div className="px-3 pb-6 pt-2">
-                                                {ex.sets.map((set, setIdx) => (
-                                                    <div
-                                                        key={setIdx}
-                                                        className="flex items-center mb-3 bg-gray-100 rounded-2xl px-4 py-2 gap-2 border border-gray-200"
-                                                    >
-                                                        <span className="w-6 text-center font-bold text-lg">{setIdx + 1}</span>
-                                                        <input
-                                                            type="number"
-                                                            value={set.weight}
-                                                            onChange={e => handleSetChange(exIdx, setIdx, "weight", e.target.value)}
-                                                            className="w-14 text-center font-bold rounded-xl bg-gray-200 border-none outline-none py-1 mx-1"
-                                                            style={{ fontSize: "1.1rem" }}
-                                                        />
-                                                        <span className="font-bold text-lg mx-1">KG</span>
-                                                        <input
-                                                            type="number"
-                                                            value={set.reps}
-                                                            onChange={e => handleSetChange(exIdx, setIdx, "reps", e.target.value)}
-                                                            className="w-12 text-center font-bold rounded-xl bg-gray-200 border-none outline-none py-1 mx-1"
-                                                            style={{ fontSize: "1.1rem" }}
-                                                        />
-                                                        <span className="font-bold text-lg mx-1">회</span>
-                                                        {setIdx > 0 && (
-                                                            <button
-                                                                type="button"
-                                                                className="ml-2 text-gray-500 hover:text-red-500 font-bold text-xl px-2"
-                                                                onClick={() => handleRemoveSet(exIdx, setIdx)}
-                                                            >
-                                                                ×
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                ))}
-                                                <button
-                                                    className="w-full bg-gray-200 rounded-2xl py-3 mt-2 font-bold text-lg text-gray-700"
-                                                    onClick={() => handleAddSet(exIdx)}
-                                                >
-                                                    + 세트 추가
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </Draggable>
-                            ))}
-                            {provided.placeholder}
-                        </div>
-                    )}
-                </StrictModeDroppable>
-            </DragDropContext>
-            <button
-                className="w-full bg-blue-600 text-white rounded-xl py-3 font-bold mt-6 text-lg shadow"
-                onClick={() => setShowModal(true)}
-            >
-                운동 추가
-            </button>
-            {showModal && (
-                <ExerciseSelectModal
-                    onClose={() => setShowModal(false)}
-                    onSelect={handleAddExercises}
-                    alreadySelected={alreadySelected}
-                    initialSelected={alreadySelected}
-                    heightPercent={80}
-                />
-            )}
-            <button
-                className="w-full bg-blue-600 text-white rounded-xl py-3 font-bold mt-6 text-lg shadow"
-                onClick={handleSave}
-            >
-                저장
-            </button>
-        </div>
+        </Layout>
     );
 }

@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { getAllExercises } from "../../api/exercise";
-import { getRoutineExercises } from "../../api/exercise"; // 추가
+import { getAllExercises, getRoutineExercises } from "../../api/exercise";
+import Layout from "../../components/Layout";
 
 const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
 
@@ -63,45 +63,60 @@ export default function RoutineExerciseEditor() {
     };
 
     return (
-        <div className="min-h-screen bg-white px-4 py-6">
-            <h2 className="text-xl font-bold mb-4">운동 추가</h2>
-            {loading ? (
-                <div className="text-center py-10">운동 목록을 불러오는 중...</div>
-            ) : (
-                <div className="space-y-3">
-                    {exercises.map((ex) => {
-                        const isSelected = selected.includes(ex.id);
-                        return (
-                            <div
-                                key={ex.id}
-                                className={`flex items-center gap-3 border-b py-2 cursor-pointer rounded-lg transition-colors
-        ${isSelected ? "bg-blue-100 border-blue-400" : "bg-white"} pl-3`}
-                                onClick={() => toggle(ex.id)}
-                                style={{ borderWidth: isSelected ? 2 : 1 }}
-                            >
-                                <img
-                                    src={IMAGE_BASE_URL + ex.thumbnailUrl}
-                                    alt={ex.name}
-                                    className="w-20 h-20 object-contain"
-                                    style={{ background: "#f3f3f3", borderRadius: 8 }}
-                                />
-                                <div>
-                                    <div className="font-semibold">{ex.name}</div>
-                                    <div className="text-xs text-gray-500">{ex.targetMuscle}</div>
-                                    <div className="text-xs text-gray-400">{ex.description}</div>
-                                </div>
-                            </div>
-                        );
-                    })}
+        <Layout>
+            <div className="space-y-6">
+                <div className="space-y-1">
+                    <h2 className="text-2xl font-bold text-white">운동 추가</h2>
+                    <p className="text-sm text-purple-200">
+                        루틴에 포함할 운동을 선택하세요.
+                    </p>
                 </div>
-            )}
-            <button
-                className="w-full bg-blue-600 text-white rounded py-3 font-bold mt-6"
-                onClick={handleNext}
-                disabled={selected.length === 0}
-            >
-                {selected.length > 0 ? `운동 ${selected.length}개 선택 완료` : "운동 선택"}
-            </button>
-        </div>
+                {loading ? (
+                    <div className="flex min-h-[30vh] items-center justify-center text-gray-300">
+                        운동 목록을 불러오는 중...
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {exercises.map((ex) => {
+                            const isSelected = selected.includes(ex.id);
+                            return (
+                                <button
+                                    key={ex.id}
+                                    type="button"
+                                    onClick={() => toggle(ex.id)}
+                                    className={`flex w-full items-center gap-4 rounded-2xl border p-4 text-left shadow-lg backdrop-blur-lg transition ${
+                                        isSelected
+                                            ? "border-purple-400 bg-purple-500/30"
+                                            : "border-white/20 bg-white/10 hover:border-purple-300"
+                                    }`}
+                                >
+                                    <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-black/20">
+                                        <img
+                                            src={IMAGE_BASE_URL + ex.thumbnailUrl}
+                                            alt={ex.name}
+                                            className="h-full w-full object-cover"
+                                        />
+                                    </div>
+                                    <div className="min-w-0 flex-1 text-white">
+                                        <div className="truncate text-lg font-semibold">{ex.name}</div>
+                                        <div className="mt-1 text-sm text-purple-200">{ex.targetMuscle}</div>
+                                        <p className="mt-1 text-xs text-gray-200/80">
+                                            {ex.description}
+                                        </p>
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
+                )}
+                <button
+                    className="w-full rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 py-3 text-lg font-bold text-white shadow-lg transition-transform duration-300 hover:scale-105 disabled:cursor-not-allowed disabled:opacity-60"
+                    onClick={handleNext}
+                    disabled={selected.length === 0}
+                >
+                    {selected.length > 0 ? `운동 ${selected.length}개 선택 완료` : "운동 선택"}
+                </button>
+            </div>
+        </Layout>
     );
 }
