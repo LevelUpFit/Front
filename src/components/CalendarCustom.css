@@ -110,3 +110,22 @@
     color: white !important;
 }
 
+/* ====== 달력은 무조건 7칸 ====== */
+.calendar-dark-theme .react-calendar__month-view__weekdays,
+.calendar-dark-theme .react-calendar__month-view__days {
+    display: grid !important;
+    grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+}
+
+/* 타일이 7칸에 꽉 차도록 */
+.calendar-dark-theme .react-calendar__tile {
+    width: 100% !important;
+    box-sizing: border-box;
+}
+
+
+/* ====== 현재 달이 아닌 날짜 흐리게 표시 ====== */
+.calendar-dark-theme .react-calendar__month-view__days__day--neighboringMonth {
+    opacity: 0.3;
+    color: rgba(255, 255, 255, 0.4);
+}

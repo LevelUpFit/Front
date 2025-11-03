@@ -8,10 +8,16 @@ function getKoreaDateKey(date) {
     return korea.toISOString().split("T")[0];
 }
 
-export default function Calendar({ selectedDate, onSelect, workoutDates, onActiveStartDateChange }) {
+export default function Calendar({
+    selectedDate,
+    onSelect,
+    workoutDates,
+    onActiveStartDateChange,
+}) {
     const today = new Date();
+
     const tileClassName = ({ date, view }) => {
-        const dateStr = getKoreaDateKey(date); // 한국 시간 기준으로 변환
+        const dateStr = getKoreaDateKey(date);
         if (view === "month" && workoutDates.includes(dateStr)) {
             return "workout-day";
         }
@@ -20,12 +26,12 @@ export default function Calendar({ selectedDate, onSelect, workoutDates, onActiv
 
     const tileDisabled = ({ date }) => date > today;
 
-    // 일요일 빨간색, 토요일 파란색, 나머지는 기본색
+    // 일요일 빨강, 토요일 파랑
     const formatDay = (_, date) => {
         const day = date.getDay();
         let color = "";
-        if (day === 0) color = "text-red-400";      // 일요일
-        else if (day === 6) color = "text-blue-400"; // 토요일
+        if (day === 0) color = "text-red-400";
+        else if (day === 6) color = "text-blue-400";
         return <span className={color}>{date.getDate()}</span>;
     };
 
@@ -37,7 +43,9 @@ export default function Calendar({ selectedDate, onSelect, workoutDates, onActiv
                 tileClassName={tileClassName}
                 tileDisabled={tileDisabled}
                 locale="ko-KR"
-                showNeighboringMonth={false}
+                /* 🔴 여기! false → true 로 바꾼다 */
+                showNeighboringMonth={true}
+                /* 이 버전에서 쓸 수 있는 일요일 시작 타입 */
                 calendarType="hebrew"
                 formatDay={formatDay}
                 onActiveStartDateChange={onActiveStartDateChange}
