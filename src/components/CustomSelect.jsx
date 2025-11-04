@@ -1,58 +1,76 @@
-import { useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 
-export default function CustomSelect({ options, value, onChange, borderColor = "#3b82f6", open, setOpen, name }) {
-    const isActive = open === name;
-    const selectRef = useRef(null);
+export default function CustomSelect({
+    options,
+    value,
+    onChange,
+    placeholder = "선택...",
+}) {
+    const [isOpen, setIsOpen] = useState(false);
+    const ref = useRef(null);
+
+    const selectedOption = options.find((opt) => opt.value === value);
 
     useEffect(() => {
-        if (!isActive) return;
-        const handleClick = (e) => {
-            if (selectRef.current && !selectRef.current.contains(e.target)) {
-                setOpen(null);
+        const handleClickOutside = (event) => {
+            if (ref.current && !ref.current.contains(event.target)) {
+                setIsOpen(false);
             }
         };
-        document.addEventListener("mousedown", handleClick);
-        return () => document.removeEventListener("mousedown", handleClick);
-    }, [isActive, setOpen]);
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+    const handleSelect = (optionValue) => {
+        onChange(optionValue);
+        setIsOpen(false);
+    };
 
     return (
-        <div className="relative w-36 select-none" ref={selectRef}>
+        <div className="relative w-full" ref={ref}>
             <button
                 type="button"
-                className="w-full bg-white rounded-xl border-2 py-1.5 px-3 text-base font-semibold flex items-center justify-between"
-                style={{
-                    borderColor: isActive ? borderColor : "#e5e7eb",
-                    boxShadow: isActive ? `0 0 0 2px #3b82f655` : "0 2px 8px 0 #3b82f622",
-                    transition: "box-shadow 0.2s, border-color 0.2s",
-                    minHeight: 38,
-                }}
-                onClick={() => setOpen(isActive ? null : name)}
-                tabIndex={0}
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex w-full items-center justify-between rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-left text-sm font-medium text-white shadow-lg backdrop-blur-lg transition hover:border-purple-300 focus:border-purple-400 focus:outline-none"
             >
-                <span className="truncate">{value}</span>
-                <span className="ml-2 text-base text-gray-500">▴</span>
-            </button>
-            {isActive && (
-                <div
-                    className="absolute left-0 mt-2 w-full bg-white rounded-2xl shadow-lg z-20 border"
-                    style={{ boxShadow: "0 4px 16px 0 #3b82f633" }}
+                <span className={selectedOption ? "text-white" : "text-gray-400"}>
+                    {selectedOption ? selectedOption.label : placeholder}
+                </span>
+                <svg
+                    className={`h-5 w-5 transform text-gray-400 transition-transform ${
+                        isOpen ? "rotate-180" : ""
+                    }`}
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
                 >
-                    {options.map((opt) => (
-                        <div
-                            key={opt}
-                            className={`px-4 py-2 cursor-pointer text-base ${
-                                value === opt
-                                    ? "bg-blue-100 text-blue-700 font-bold"
-                                    : "hover:bg-blue-50"
-                            }`}
-                            onClick={() => {
-                                onChange(opt);
-                                setOpen(null);
-                            }}
-                        >
-                            {opt}
-                        </div>
-                    ))}
+                    <path
+                        fillRule="evenodd"
+                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                        clipRule="evenodd"
+                    />
+                </svg>
+            </button>
+
+            {isOpen && (
+                <div className="absolute z-10 mt-2 w-full overflow-hidden rounded-xl border border-white/20 bg-gray-800/80 shadow-2xl backdrop-blur-xl">
+                    <ul className="max-h-60 overflow-auto">
+                        {options.map((option) => (
+                            <li
+                                key={option.value}
+                                onClick={() => handleSelect(option.value)}
+                                className={`cursor-pointer px-4 py-3 text-sm transition ${
+                                    value === option.value
+                                        ? "bg-purple-600 font-semibold text-white"
+                                        : "text-gray-200 hover:bg-purple-500/30"
+                                }`}
+                            >
+                                {option.label}
+                            </li>
+                        ))}
+                    </ul>
                 </div>
             )}
         </div>

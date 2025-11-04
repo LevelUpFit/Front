@@ -42,40 +42,63 @@ export default function RoutineInfo() {
 
     return (
         <Layout>
-            <div className="min-h-screen p-4">
-                <h2 className="text-2xl font-bold mb-4">루틴 상세 정보</h2>
+            <div className="space-y-6">
+                <div className="space-y-1">
+                    <h2 className="text-2xl font-bold text-white">루틴 상세 정보</h2>
+                    <p className="text-sm text-purple-200">
+                        오늘의 루틴을 확인하고 바로 운동을 시작해 보세요.
+                    </p>
+                </div>
+
                 {exercises.length === 0 ? (
-                    <div>운동 정보가 없습니다.</div>
+                    <div className="rounded-2xl border border-white/20 bg-white/10 p-6 text-center text-gray-200 backdrop-blur-lg">
+                        등록된 운동이 없습니다.
+                    </div>
                 ) : (
-                    <ul className="space-y-3">
+                    <div className="space-y-4">
                         {exercises.map((ex) => {
                             const detail = exerciseDetails[ex.exerciseId];
+                            const thumbnail = detail?.thumbnailUrl
+                                ? `${IMAGE_BASE_URL}${detail.thumbnailUrl}`
+                                : defaultImg;
                             return (
-                                <li
+                                <button
                                     key={ex.id}
-                                    className="bg-white rounded-xl shadow flex items-center gap-4 p-4 cursor-pointer hover:bg-blue-50 transition"
-                                    onClick={() => navigate(`/exercise-info/${ex.exerciseId}`)} // 카드 클릭 시 이동
+                                    type="button"
+                                    onClick={() => navigate(`/exercise-info/${ex.exerciseId}`)}
+                                    className="flex w-full items-center gap-4 rounded-2xl border border-white/20 bg-white/10 p-5 text-left text-white shadow-2xl transition hover:border-purple-400 hover:bg-white/15"
                                 >
-                                    <img
-                                        src={IMAGE_BASE_URL + (detail?.thumbnailUrl || "") || defaultImg}
-                                        alt={detail?.name || "운동"}
-                                        className="w-16 h-16 object-contain"
-                                    />
-                                    <div>
-                                        <div className="font-semibold text-lg mb-1">
-                                            {detail?.name || `운동 ID: ${ex.exerciseId}`}
-                                        </div>
-                                        <div className="text-gray-700">세트: {ex.sets}</div>
-                                        <div className="text-gray-700">반복: {ex.reps.join(", ")}회</div>
-                                        <div className="text-gray-700">휴식: {ex.restTime}초</div>
+                                    <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-black/10">
+                                        <img
+                                            src={thumbnail}
+                                            alt={detail?.name || "운동"}
+                                            className="h-full w-full object-cover"
+                                        />
                                     </div>
-                                </li>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="truncate text-lg font-bold">
+                                            {detail?.name || `운동 ID: ${ex.exerciseId}`}
+                                        </p>
+                                        <div className="mt-2 grid grid-cols-3 gap-2 text-sm text-purple-200">
+                                            <span className="rounded-full bg-white/10 px-3 py-1 text-center">
+                                                세트 {ex.sets}개
+                                            </span>
+                                            <span className="rounded-full bg-white/10 px-3 py-1 text-center truncate">
+                                                반복 {Array.isArray(ex.reps) ? ex.reps.join(", ") : ex.reps}회
+                                            </span>
+                                            <span className="rounded-full bg-white/10 px-3 py-1 text-center">
+                                                휴식 {ex.restTime}초
+                                            </span>
+                                        </div>
+                                    </div>
+                                </button>
                             );
                         })}
-                    </ul>
+                    </div>
                 )}
-                <button 
-                    className="w-full mt-8 py-4 bg-blue-600 text-white rounded-xl font-bold text-lg"
+
+                <button
+                    className="w-full rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 py-3 text-lg font-bold text-white shadow-lg transition-transform duration-300 hover:scale-105"
                     onClick={() => navigate(`/workout/group/${routineId}`)}
                 >
                     시작하기
