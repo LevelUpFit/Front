@@ -10,6 +10,8 @@ import OrientationConfirmModal from "../../components/OrientationConfirmModal";
 import { useWebSocketStore } from "../../stores/websocketStore";
 import { getFeedbackAvailableExercises } from "../../api/exercise";
 import FeedbackListCard from "../../components/FeedbackListCard";
+import CustomSelect from "../../components/CustomSelect";
+
 
 export default function FeedbackPage() {
     const navigate = useNavigate();
@@ -21,6 +23,20 @@ export default function FeedbackPage() {
     const [showOrientationModal, setShowOrientationModal] = useState(false);
     const [videoOrientation, setVideoOrientation] = useState("세로");
     const [selectedExerciseId, setSelectedExerciseId] = useState(null);
+
+    const levelOptions = [
+        { value: "초급", label: "초급" },
+        { value: "중급", label: "중급" },
+        { value: "고급", label: "고급" },
+    ];
+
+    const exerciseSelectOptions = useMemo(() => {
+        return exerciseOptions.map(opt => ({
+            value: opt.name,
+            label: opt.name,
+        }));
+    }, [exerciseOptions]);
+
 
     const fileInputRef = useRef(null);
     const [selectedVideo, setSelectedVideo] = useState(null);
@@ -219,34 +235,17 @@ export default function FeedbackPage() {
                 </div>
 
                 <div className="flex gap-3">
-                    <div className="relative w-1/2">
-                        <select
-                            className={selectClassName}
-                            value={selectedLevel}
-                            onChange={(e) => setSelectedLevel(e.target.value)}
-                            style={{ colorScheme: "dark" }}
-                        >
-                            <option value="초급">초급</option>
-                            <option value="중급">중급</option>
-                            <option value="고급">고급</option>
-                        </select>
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">▼</div>
-                    </div>
-                    <div className="relative w-1/2">
-                        <select
-                            className={selectClassName}
-                            value={selectedExercise}
-                            onChange={(e) => setSelectedExercise(e.target.value)}
-                            style={{ colorScheme: "dark" }}
-                        >
-                            {exerciseOptions.map((opt) => (
-                                <option key={opt.exercise_id} value={opt.name}>
-                                    {opt.name}
-                                </option>
-                            ))}
-                        </select>
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">▼</div>
-                    </div>
+                    <CustomSelect
+                        options={levelOptions}
+                        value={selectedLevel}
+                        onChange={setSelectedLevel}
+                    />
+                    <CustomSelect
+                        options={exerciseSelectOptions}
+                        value={selectedExercise}
+                        onChange={setSelectedExercise}
+                        placeholder="운동 선택"
+                    />
                 </div>
 
                 <div className="rounded-2xl border border-white/20 bg-white/10 p-4 shadow-xl backdrop-blur-lg sm:p-6">

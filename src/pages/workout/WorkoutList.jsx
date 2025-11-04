@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout";
 import { getRoutine, getRoutineById } from "../../api/routine";
 import useUserStore from "../../stores/userStore";
+import CustomSelect from "../../components/CustomSelect"; // CustomSelect 임포트
 
 import legImg from "../../assets/leg.png";
 import backImg from "../../assets/back.png";
@@ -10,6 +11,26 @@ import chestImg from "../../assets/chest.png";
 import shoulderImg from "../../assets/shoulder.png";
 import armImg from "../../assets/arm.png";
 import defaultImg from "../../assets/default.png";
+
+const levelOptions = [
+    { value: "전체", label: "전체 레벨" },
+    { value: "초급", label: "초급" },
+    { value: "중급", label: "중급" },
+    { value: "고급", label: "고급" },
+    { value: "내", label: "My 루틴" },
+];
+
+const muscleOptions = [
+    { value: "전체", label: "전체 부위" },
+    { value: "등", label: "등" },
+    { value: "전신", label: "전신" },
+    { value: "가슴", label: "가슴" },
+    { value: "하체", label: "하체" },
+    { value: "복부", label: "복부" },
+    { value: "어깨", label: "어깨" },
+    { value: "팔", label: "팔" },
+];
+
 
 const levelMap = {
     전체: "all",
@@ -29,22 +50,20 @@ const muscleImageMap = {
     복부: defaultImg,
 };
 
-const filterPlansByLevel = (plans, levelText, userId) => {
-    if (levelText === "내") {
+const filterPlansByLevel = (plans, level, userId) => {
+    if (level === "내") {
         // userId가 있는 루틴만 필터링
         return plans.filter(plan => plan.userId === userId);
     }
-    if (levelText === "전체") {
+    if (level === "전체") {
         return plans;
     }
-    const levelValue = levelMap[levelText];
+    const levelValue = levelMap[level];
     return plans.filter(plan => plan.difficulty === levelValue);
 };
 
-const muscleList = ["전체", "등", "전신", "가슴", "하체", "복부", "어깨", "팔"];
-
 export default function WorkoutList() {
-    const [levelText, setLevelText] = useState("전체");
+    const [level, setLevel] = useState("전체");
     const [muscle, setMuscle] = useState("전체");
     const [plans, setPlans] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -78,9 +97,9 @@ export default function WorkoutList() {
     }, [fetchAllPlans]);
 
     const filteredPlans = useMemo(() => {
-        const byLevel = filterPlansByLevel(plans, levelText, userId);
+        const byLevel = filterPlansByLevel(plans, level, userId);
         return byLevel.filter((plan) => (muscle === "전체" ? true : plan.targetMuscle === muscle));
-    }, [plans, levelText, muscle, userId]);
+    }, [plans, level, muscle, userId]);
 
     const visibleRoutineCount = isLoading ? "..." : filteredPlans.length;
 
@@ -113,7 +132,7 @@ export default function WorkoutList() {
                     <div className="flex items-start justify-between">
                         <div>
                             <p className="text-sm text-purple-200">오늘의 루틴</p>
-                            <h1 className="mt-1 text-2xl font-bold text-white">{levelText} 운동 루틴</h1>
+                            <h1 className="mt-1 text-2xl font-bold text-white">{level} 운동 루틴</h1>
                             <p className="mt-2 text-sm text-gray-300">
                                 총 {visibleRoutineCount}개의 루틴을 확인할 수 있어요.
                             </p>
@@ -135,26 +154,16 @@ export default function WorkoutList() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <select
-                        className="w-1/2 rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-medium text-white backdrop-blur-lg transition focus:border-purple-400 focus:outline-none"
-                        value={levelText}
-                        onChange={(e) => setLevelText(e.target.value)}
-                    >
-                        <option value="전체">전체 레벨</option>
-                        <option value="초급">초급</option>
-                        <option value="중급">중급</option>
-                        <option value="고급">고급</option>
-                        <option value="내">My 루틴</option>
-                    </select>
-                    <select
-                        className="w-1/2 rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-medium text-white backdrop-blur-lg transition focus:border-purple-400 focus:outline-none"
+                    <CustomSelect
+                        options={levelOptions}
+                        value={level}
+                        onChange={setLevel}
+                    />
+                    <CustomSelect
+                        options={muscleOptions}
                         value={muscle}
-                        onChange={(e) => setMuscle(e.target.value)}
-                    >
-                        {muscleList.map(m => (
-                            <option key={m} value={m}>{m}</option>
-                        ))}
-                    </select>
+                        onChange={setMuscle}
+                    />
                 </div>
 
                 {isLoading ? (
