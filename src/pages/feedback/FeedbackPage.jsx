@@ -303,13 +303,25 @@ export default function FeedbackPage() {
                         <span className="text-xs text-purple-200">총 {feedbackList.length}건</span>
                     </div>
                     {isLoading ? (
-                        <div className="py-10 text-center text-gray-300">피드백을 불러오는 중입니다...</div>
+                        <div className="flex h-40 items-center justify-center">
+                            <svg className="h-8 w-8 animate-spin text-purple-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
                     ) : error ? (
-                        <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-center text-rose-100">
-                            {error}
+                        <div className="flex h-40 flex-col items-center justify-center rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-center text-rose-200">
+                            <p className="font-semibold">오류 발생</p>
+                            <p className="mt-1 text-sm">{error}</p>
                         </div>
                     ) : feedbackList.length === 0 ? (
-                        <div className="py-10 text-center text-gray-400">피드백 내역이 없습니다.</div>
+                        <div className="flex h-40 flex-col items-center justify-center text-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.182 16.318A4.5 4.5 0 0012 15a4.5 4.5 0 00-3.182 1.318M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm6 0a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+                            </svg>
+                            <p className="mt-3 font-semibold text-gray-300">아직 AI 피드백이 없어요</p>
+                            <p className="mt-1 text-xs text-gray-400">운동 영상을 업로드하고 첫 피드백을 받아보세요!</p>
+                        </div>
                     ) : (
                         <div className="space-y-3">
                             {feedbackList.map((feedback) => (
