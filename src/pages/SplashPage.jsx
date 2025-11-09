@@ -9,7 +9,7 @@ export default function SplashPage() {
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            if (isLoggedIn()) {
+            if (isLoggedIn) {
                 navigate('/main');
             } else {
                 navigate('/login');
