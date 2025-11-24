@@ -256,7 +256,7 @@ export default function WorkoutSession() {
                                         return (
                                             <div
                                                 key={idx}
-                                                className={`flex items-center gap-2 rounded-lg border p-2 transition ${
+                                                className={`flex items-center gap-3 rounded-lg border p-3 transition ${
                                                     isDone
                                                         ? "border-green-500/50 bg-green-600/30"
                                                         : isCurrentSet
@@ -264,33 +264,37 @@ export default function WorkoutSession() {
                                                         : "border-transparent bg-white/10"
                                                 }`}
                                             >
-                                                <div className="flex h-6 w-6 items-center justify-center">
+                                                <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center">
                                                     {isDone ? (
                                                         <SetCheckIcon />
                                                     ) : isCurrentSet ? (
                                                         <CurrentSetIcon />
                                                     ) : (
-                                                        <span className="text-sm text-gray-400">{idx + 1}</span>
+                                                        <span className="text-sm font-medium text-gray-400">{idx + 1}</span>
                                                     )}
                                                 </div>
-                                                <input
-                                                    type="number"
-                                                    value={set.weight}
-                                                    onChange={(e) =>
-                                                        handleSetChange(exIdx, idx, "weight", e.target.value)
-                                                    }
-                                                    className="w-16 rounded-md border-none bg-white/20 py-1 text-center text-lg font-bold text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-400"
-                                                />
-                                                <span className="text-lg font-semibold text-gray-300">KG</span>
-                                                <input
-                                                    type="number"
-                                                    value={set.reps}
-                                                    onChange={(e) =>
-                                                        handleSetChange(exIdx, idx, "reps", e.target.value)
-                                                    }
-                                                    className="w-16 rounded-md border-none bg-white/20 py-1 text-center text-lg font-bold text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-400"
-                                                />
-                                                <span className="text-lg font-semibold text-gray-300">회</span>
+                                                <div className="flex flex-1 items-center gap-2">
+                                                    <input
+                                                        type="number"
+                                                        value={set.weight}
+                                                        onChange={(e) =>
+                                                            handleSetChange(exIdx, idx, "weight", e.target.value)
+                                                        }
+                                                        className="w-20 rounded-md border-none bg-white/20 py-2 text-center text-lg font-bold text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                                                    />
+                                                    <span className="text-base font-semibold text-gray-300">KG</span>
+                                                </div>
+                                                <div className="flex flex-1 items-center gap-2">
+                                                    <input
+                                                        type="number"
+                                                        value={set.reps}
+                                                        onChange={(e) =>
+                                                            handleSetChange(exIdx, idx, "reps", e.target.value)
+                                                        }
+                                                        className="w-20 rounded-md border-none bg-white/20 py-2 text-center text-lg font-bold text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                                                    />
+                                                    <span className="text-base font-semibold text-gray-300">회</span>
+                                                </div>
                                             </div>
                                         );
                                     })}

@@ -1,5 +1,6 @@
 // AppRouter.jsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import SplashPage from "../pages/SplashPage";
 import Welcome from "../pages/Welcome";
 import Login from "../pages/Login";
 import Signup from "../pages/Signup";
@@ -25,7 +26,8 @@ export default function AppRouter() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/" element={<Welcome />} />
+                <Route path="/" element={<SplashPage />} />
+                <Route path="/welcome" element={<Welcome />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/kakao/callback" element={<KakaoCallback />} />
                 <Route path="/signup" element={<Signup />} />
