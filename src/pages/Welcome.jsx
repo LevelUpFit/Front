@@ -4,6 +4,7 @@ import logo from "../assets/logo.png";
 import { kakaoLogin } from "../api/kakao";
 import kakaoLoginImg from "../assets/kakao_login.png"; // 이미지 파일 import
 
+//삭제해도 되나
 export default function Welcome() {
     const navigate = useNavigate();
 
