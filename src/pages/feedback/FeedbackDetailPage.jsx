@@ -179,9 +179,9 @@ export default function FeedbackDetailPage() {
 
                     <div className={`${cardBase} ${cardState(2)}`}>
                         <h2 className="text-center text-xl font-semibold text-white">동영상</h2>
-                        <div className="mt-4 flex flex-1 items-center justify-center">
+                        <div className="mt-4 flex flex-1 items-center justify-center overflow-hidden">
                             {videoUrl ? (
-                                <video src={videoUrl} controls className="w-full rounded-2xl border border-white/20 shadow-lg" />
+                                <video src={videoUrl} controls className="max-h-full w-full rounded-2xl border border-white/20 shadow-lg object-contain" />
                             ) : (
                                 <div className="rounded-2xl border border-dashed border-white/20 px-6 py-10 text-center text-gray-300">
                                     동영상이 없습니다.
