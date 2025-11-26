@@ -159,7 +159,7 @@ export default function FeedbackPage() {
         const exerciseId = selectedExerciseId;
         const video = selectedVideo;
         const isPortrait = orientation === "세로";
-        const performedDate = "2025-06-12"; // 샘플 날짜
+        const performedDate = new Date().toISOString().split('T')[0]; // 오늘 날짜 (YYYY-MM-DD)
         const level = getLevelNumber(selectedLevel); // 난이도 숫자 변환
 
         if (!video) {
