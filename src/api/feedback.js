@@ -2,12 +2,14 @@ import api from "./api";
 
 export const uploadExerciseVideo = async ({ userId, exerciseId, video, isPortrait, performedDate, level }) => {
     const formData = new FormData();
-    formData.append("userId", userId);
-    formData.append("exerciseId", exerciseId);
+    formData.append("userId", String(userId));
+    formData.append("exerciseId", String(exerciseId));
     formData.append("video", video);
-    formData.append("isPortrait", isPortrait);
+    formData.append("isPortrait", String(isPortrait));
     formData.append("performedDate", performedDate);
-    formData.append("level", level);
+    if (level !== undefined && level !== null) {
+        formData.append("level", String(level));
+    }
 
     return api.post("/exercise-feedback/video", formData, {
         headers: {
