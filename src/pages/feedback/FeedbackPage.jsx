@@ -7,11 +7,10 @@ import lungeGuideGif from "../../assets/lunge_guide.gif";
 import { uploadExerciseVideo, getFeedbackList } from "../../api/feedback";
 import useUserStore from "../../stores/userStore";
 import OrientationConfirmModal from "../../components/OrientationConfirmModal";
-import { useWebSocketStore } from "../../stores/websocketStore";
+import { useWebSocket } from "../../contexts/WebSocketContext";
 import { getFeedbackAvailableExercises } from "../../api/exercise";
 import FeedbackListCard from "../../components/FeedbackListCard";
 import CustomSelect from "../../components/CustomSelect";
-import AnalysisCompleteModal from "../../components/AnalysisCompleteModal";
 
 
 export default function FeedbackPage() {
@@ -24,7 +23,6 @@ export default function FeedbackPage() {
     const [showOrientationModal, setShowOrientationModal] = useState(false);
     const [videoOrientation, setVideoOrientation] = useState("세로");
     const [selectedExerciseId, setSelectedExerciseId] = useState(null);
-    const [showAnalysisComplete, setShowAnalysisComplete] = useState(false);
 
     const levelOptions = [
         { value: "초급", label: "초급" },
@@ -42,7 +40,7 @@ export default function FeedbackPage() {
 
     const fileInputRef = useRef(null);
     const [selectedVideo, setSelectedVideo] = useState(null);
-    const connect = useWebSocketStore((state) => state.connect);
+    const { connect } = useWebSocket();
     const { getUserId } = useUserStore();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -181,9 +179,8 @@ export default function FeedbackPage() {
 
             const newFeedbackId = res.data.data.feedbackId || "none";
 
-            // WebSocket 연결 (분석 완료 시 피드백 리스트 갱신)
-            const wsBaseUrl = import.meta.env.VITE_WS_BASE_URL;
-            connect(`${wsBaseUrl}/ws/feedback/${newFeedbackId}`, fetchFeedbackList);
+            // WebSocket 연결 (전역 모달로 알림)
+            connect(newFeedbackId);
 
             // 업로드 후 피드백 리스트 갱신
             await fetchFeedbackList();
@@ -368,15 +365,6 @@ export default function FeedbackPage() {
                     onClose={() => setShowOrientationModal(false)}
                 />
             )}
-            <AnalysisCompleteModal
-                isOpen={showAnalysisComplete}
-                onClose={() => setShowAnalysisComplete(false)}
-                onConfirm={() => {
-                    setShowAnalysisComplete(false);
-                    // TODO: 실제로는 분석 완료된 피드백 상세 페이지로 이동
-                    alert("결과 확인 페이지로 이동합니다!");
-                }}
-            />
         </Layout>
     );
 }
