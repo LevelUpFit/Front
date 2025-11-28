@@ -174,7 +174,7 @@ export default function FeedbackPage() {
                 video,
                 isPortrait,
                 performedDate,
-                level, // level 필드 추가!
+                level,
             });
 
             const newFeedbackId = res.data.data.feedbackId || "none";
@@ -208,8 +208,6 @@ export default function FeedbackPage() {
             setSelectedExerciseId(null);
             return;
         }
-        // exerciseOptions가 ["스쿼트", "런지"]가 아니라 [{name, exercise_id}, ...] 형태여야 함!
-        // 만약 options가 이름 배열이면 아래처럼 매핑해서 객체 배열로 바꿔주세요.
         const selected = exerciseOptions.find((opt) => opt.name === selectedExercise);
         setSelectedExerciseId(selected ? selected.exercise_id : null);
     }, [selectedExercise, exerciseOptions]);
