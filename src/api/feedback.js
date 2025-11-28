@@ -23,3 +23,7 @@ export const getFeedbackList = async (userId) => {
         params: { userId },
     });
 };
+
+export const getFeedbackById = async (feedbackId) => {
+    return api.get(`/exercise-feedback/get-one/${feedbackId}`);
+};

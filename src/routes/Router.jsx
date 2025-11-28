@@ -1,5 +1,6 @@
 // AppRouter.jsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { WebSocketProvider } from "../contexts/WebSocketContext";
 import SplashPage from "../pages/SplashPage";
 import Welcome from "../pages/Welcome";
 import Login from "../pages/Login";
@@ -25,7 +26,8 @@ import KakaoCallback from "../pages/kakao/KakaoCallback";
 export default function AppRouter() {
     return (
         <BrowserRouter>
-            <Routes>
+            <WebSocketProvider>
+                <Routes>
                 <Route path="/" element={<SplashPage />} />
                 <Route path="/welcome" element={<Welcome />} />
                 <Route path="/login" element={<Login />} />
@@ -56,6 +58,7 @@ export default function AppRouter() {
 
                 <Route path="*" element={<NotFound />} />
             </Routes>
+            </WebSocketProvider>
         </BrowserRouter>
     );
 }

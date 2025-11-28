@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Layout from "../../components/Layout";
 import { getExerciseById } from "../../api/exercise";
+import { getFeedbackById } from "../../api/feedback";
 
 function FeedbackGraph({ feedback }) {
     const accuracy = typeof feedback.accuracy === "number" ? feedback.accuracy : 0;
@@ -43,10 +44,33 @@ function FeedbackGraph({ feedback }) {
 export default function FeedbackDetailPage() {
     const location = useLocation();
     const navigate = useNavigate();
-    const feedback = location.state?.feedback;
+    const { feedbackId } = useParams();
+    const [feedback, setFeedback] = useState(location.state?.feedback || null);
     const [exerciseName, setExerciseName] = useState("");
     const [slideIndex, setSlideIndex] = useState(0);
+    const [loading, setLoading] = useState(!location.state?.feedback);
     const touchStartX = useRef(null);
+
+    // feedbackId로 데이터 조회
+    useEffect(() => {
+        async function fetchFeedback() {
+            if (feedback) return; // 이미 state에 있으면 조회 안함
+            if (!feedbackId) return;
+
+            try {
+                setLoading(true);
+                const res = await getFeedbackById(feedbackId);
+                if (res.data.success) {
+                    setFeedback(res.data.data);
+                }
+            } catch (error) {
+                console.error("피드백 조회 실패:", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchFeedback();
+    }, [feedbackId, feedback]);
 
     useEffect(() => {
         async function fetchExerciseName() {
@@ -60,6 +84,16 @@ export default function FeedbackDetailPage() {
         }
         fetchExerciseName();
     }, [feedback]);
+
+    if (loading) {
+        return (
+            <Layout>
+                <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
+                    <p className="text-lg text-gray-300">피드백 데이터를 불러오는 중...</p>
+                </div>
+            </Layout>
+        );
+    }
 
     if (!feedback) {
         return (
@@ -179,9 +213,9 @@ export default function FeedbackDetailPage() {
 
                     <div className={`${cardBase} ${cardState(2)}`}>
                         <h2 className="text-center text-xl font-semibold text-white">동영상</h2>
-                        <div className="mt-4 flex flex-1 items-center justify-center">
+                        <div className="mt-4 flex flex-1 items-center justify-center overflow-hidden">
                             {videoUrl ? (
-                                <video src={videoUrl} controls className="w-full rounded-2xl border border-white/20 shadow-lg" />
+                                <video src={videoUrl} controls className="max-h-full w-full rounded-2xl border border-white/20 shadow-lg object-contain" />
                             ) : (
                                 <div className="rounded-2xl border border-dashed border-white/20 px-6 py-10 text-center text-gray-300">
                                     동영상이 없습니다.

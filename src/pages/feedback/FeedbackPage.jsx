@@ -7,7 +7,7 @@ import lungeGuideGif from "../../assets/lunge_guide.gif";
 import { uploadExerciseVideo, getFeedbackList } from "../../api/feedback";
 import useUserStore from "../../stores/userStore";
 import OrientationConfirmModal from "../../components/OrientationConfirmModal";
-import { useWebSocketStore } from "../../stores/websocketStore";
+import { useWebSocket } from "../../contexts/WebSocketContext";
 import { getFeedbackAvailableExercises } from "../../api/exercise";
 import FeedbackListCard from "../../components/FeedbackListCard";
 import CustomSelect from "../../components/CustomSelect";
@@ -40,7 +40,7 @@ export default function FeedbackPage() {
 
     const fileInputRef = useRef(null);
     const [selectedVideo, setSelectedVideo] = useState(null);
-    const connect = useWebSocketStore((state) => state.connect);
+    const { connect } = useWebSocket();
     const { getUserId } = useUserStore();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -174,14 +174,13 @@ export default function FeedbackPage() {
                 video,
                 isPortrait,
                 performedDate,
-                level, // level 필드 추가!
+                level,
             });
 
             const newFeedbackId = res.data.data.feedbackId || "none";
 
-            // WebSocket 연결 (분석 완료 시 피드백 리스트 갱신)
-            const wsBaseUrl = import.meta.env.VITE_WS_BASE_URL;
-            connect(`${wsBaseUrl}/ws/feedback/${newFeedbackId}`, fetchFeedbackList);
+            // WebSocket 연결 (전역 모달로 알림)
+            connect(newFeedbackId);
 
             // 업로드 후 피드백 리스트 갱신
             await fetchFeedbackList();
@@ -209,8 +208,6 @@ export default function FeedbackPage() {
             setSelectedExerciseId(null);
             return;
         }
-        // exerciseOptions가 ["스쿼트", "런지"]가 아니라 [{name, exercise_id}, ...] 형태여야 함!
-        // 만약 options가 이름 배열이면 아래처럼 매핑해서 객체 배열로 바꿔주세요.
         const selected = exerciseOptions.find((opt) => opt.name === selectedExercise);
         setSelectedExerciseId(selected ? selected.exercise_id : null);
     }, [selectedExercise, exerciseOptions]);
