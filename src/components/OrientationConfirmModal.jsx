@@ -1,8 +1,14 @@
 import { useState, useEffect } from "react";
 
+/**
+ * 영상 업로드 후 분석 전 확인 모달
+ * - 세로/가로 선택 제거 (사용자 요청)
+ * - 다크 모드 & 보라빛 글래스모피즘 디자인 적용
+ */
 export default function OrientationConfirmModal({ video, videoUrl, orientation, setOrientation, onConfirm, onClose }) {
     const [videoSize, setVideoSize] = useState({ width: 0, height: 0 });
 
+    // 영상 비율 확인을 위한 메타데이터 로드
     useEffect(() => {
         if (!videoUrl) return;
         const tempVideo = document.createElement("video");
@@ -16,86 +22,70 @@ export default function OrientationConfirmModal({ video, videoUrl, orientation, 
     }, [videoUrl]);
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-            <div className="bg-white rounded-xl shadow p-6 w-full max-w-xs mx-auto text-center">
-                <h2 className="text-lg font-bold mb-4">영상 방향을 확인해주세요</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+            {/* 배경 흐림 처리 */}
+            <div 
+                className="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity" 
+                onClick={onClose}
+            ></div>
+
+            {/* 모달 컨텐츠: 다크 글래스모피즘 */}
+            <div className="relative w-full max-w-sm p-6 bg-gray-900/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl flex flex-col items-center transform transition-all scale-100 animate-fadeIn">
+                <h2 className="text-xl font-bold text-white mb-2">영상 확인</h2>
+                <p className="text-sm text-gray-400 mb-6">
+                    선택한 영상으로 분석을 시작하시겠습니까?
+                </p>
+
                 {video ? (
-                    <div
-                        className="mx-auto mb-4 bg-black rounded flex items-center justify-center"
+                    <div 
+                        className="relative w-full bg-black/50 rounded-xl overflow-hidden shadow-inner mb-6 flex items-center justify-center border border-white/5"
                         style={{
-                            width: videoSize.width ? `${Math.min(videoSize.width, 320)}px` : "auto",
-                            height: videoSize.height
-                                ? `${Math.min(videoSize.height, 320)}px`
-                                : "auto",
-                            maxWidth: "100%",
-                            maxHeight: "320px",
+                            // 화면 높이의 50%를 넘지 않도록 제한
+                            maxHeight: "50vh", 
+                            // 영상 비율에 맞춰 컨테이너 크기 조절 (기본 16:9)
+                            aspectRatio: videoSize.width && videoSize.height ? `${videoSize.width} / ${videoSize.height}` : "16/9"
                         }}
                     >
                         <video
                             src={videoUrl}
                             controls
-                            style={{
-                                width: "100%",
-                                height: "100%",
-                                display: "block",
-                                background: "#000",
-                                borderRadius: "0.5rem",
-                            }}
+                            className="w-full h-full object-contain"
                         />
                     </div>
                 ) : (
-                    <div className="w-full h-48 flex items-center justify-center bg-gray-100 rounded mb-4 text-gray-400">
-                        동영상을 업로드 해야합니다
+                    <div className="w-full h-48 flex items-center justify-center bg-white/5 rounded-xl mb-6 text-gray-500 border border-white/10 border-dashed">
+                        영상을 불러올 수 없습니다.
                     </div>
                 )}
-                <div className="flex justify-center my-0 mb-4">
-                    <div className="relative flex w-[190px] h-10 bg-gray-100 rounded-full shadow-sm mx-auto">
-                        <span
-                            className="absolute top-0 left-0 h-full w-1/2 transition-all duration-300 rounded-full bg-blue-500 z-0"
-                            style={{
-                                transform: orientation === "가로"
-                                    ? "translateX(100%)"
-                                    : "translateX(0%)",
-                            }}
-                        />
-                        <button
-                            className={`relative flex-1 z-10 text-base font-semibold transition-colors duration-300
-                                ${orientation === "세로" ? "text-white" : "text-gray-700"}
-                            `}
-                            style={{ borderRadius: "9999px" }}
-                            onClick={() => setOrientation("세로")}
-                            type="button"
-                        >
-                            세로영상
-                        </button>
-                        <button
-                            className={`relative flex-1 z-10 text-base font-semibold transition-colors duration-300
-                                ${orientation === "가로" ? "text-white" : "text-gray-700"}
-                            `}
-                            style={{ borderRadius: "9999px" }}
-                            onClick={() => setOrientation("가로")}
-                            type="button"
-                        >
-                            가로영상
-                        </button>
-                    </div>
-                </div>
-                <div className="flex gap-2">
+
+                <div className="flex gap-3 w-full">
                     <button
-                        className="flex-1 bg-blue-500 text-white py-2 rounded font-bold"
-                        onClick={() => video && onConfirm(orientation)}
-                        disabled={!video}
-                    >
-                        확인
-                    </button>
-                    <button
-                        className="flex-1 bg-gray-300 py-2 rounded font-bold"
+                        className="flex-1 py-3.5 rounded-xl font-bold text-gray-300 bg-white/10 hover:bg-white/20 transition-colors border border-white/5"
                         onClick={onClose}
                     >
                         취소
                     </button>
+                    {/* onConfirm에 기존 orientation 값을 전달 (기존 로직 호환성 유지) */}
+                    <button
+                        className="flex-1 py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-lg transition-transform transform hover:scale-[1.02]"
+                        onClick={() => video && onConfirm(orientation)}
+                        disabled={!video}
+                    >
+                        분석 시작
+                    </button>
                 </div>
             </div>
+
+            {/* 등장 애니메이션 */}
+            <style>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: scale(0.95); }
+                    to { opacity: 1; transform: scale(1); }
+                }
+                .animate-fadeIn {
+                    animation: fadeIn 0.2s ease-out forwards;
+                }
+            `}</style>
         </div>
     );
 }
