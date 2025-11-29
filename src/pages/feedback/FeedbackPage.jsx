@@ -47,6 +47,10 @@ export default function FeedbackPage() {
 
     // 피드백 리스트 상태
     const [feedbackList, setFeedbackList] = useState([]);
+    
+    // 페이지네이션 상태
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 4; // 페이지당 표시할 항목 수
 
     // 운동별 가이드 GIF 매핑
     const exerciseGuideMap = {
@@ -112,6 +116,19 @@ export default function FeedbackPage() {
         fetchFeedbackList();
         // eslint-disable-next-line
     }, [getUserId]);
+
+    // 페이지네이션 계산
+    const totalPages = Math.ceil(feedbackList.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentFeedbackList = feedbackList.slice(startIndex, endIndex);
+
+    // 페이지 변경 시 스크롤을 피드백 섹션 상단으로 이동
+    const feedbackSectionRef = useRef(null);
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+        feedbackSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
 
     const handleVideoUpload = (e) => {
         const file = e.target.files[0];
@@ -182,8 +199,9 @@ export default function FeedbackPage() {
             // WebSocket 연결 (전역 모달로 알림)
             connect(newFeedbackId);
 
-            // 업로드 후 피드백 리스트 갱신
+            // 업로드 후 피드백 리스트 갱신 및 첫 페이지로 이동
             await fetchFeedbackList();
+            setCurrentPage(1);
         } catch (e) {
             alert("동영상 업로드 또는 분석 요청에 실패했습니다.");
         }
@@ -293,7 +311,7 @@ export default function FeedbackPage() {
                     분석하기
                 </button>
 
-                <div className="rounded-2xl border border-white/20 bg-white/10 p-4 shadow-xl backdrop-blur-lg">
+                <div ref={feedbackSectionRef} className="rounded-2xl border border-white/20 bg-white/10 p-4 shadow-xl backdrop-blur-lg">
                     <div className="mb-3 flex items-center justify-between text-white">
                         <h2 className="text-lg font-semibold">피드백 내역</h2>
                         <span className="text-xs text-purple-200">총 {feedbackList.length}건</span>
@@ -319,26 +337,100 @@ export default function FeedbackPage() {
                             <p className="mt-1 text-xs text-gray-400">운동 영상을 업로드하고 첫 피드백을 받아보세요!</p>
                         </div>
                     ) : (
-                        <div className="space-y-3">
-                            {feedbackList.map((feedback) => (
-                                <button
-                                    key={feedback.feedbackId}
-                                    onClick={() => navigate(`/feedback/${feedback.feedbackId}`, { state: { feedback } })}
-                                    className="block w-full text-left"
-                                >
-                                    <FeedbackListCard
-                                        feedback={{
-                                            exercise: `${exerciseIdNameMap[feedback.exerciseId] || "알 수 없는 운동"} (${getLevelLabel(feedback.level)})`,
-                                            date: feedback.performedDate,
-                                            status: feedback.videoUrl === null ? "pending" : "done",
-                                            accuracy: feedback.accuracy,
-                                            movementRange: feedback.movementRange,
-                                            movementSpeed: feedback.movementSpeed,
-                                        }}
-                                    />
-                                </button>
-                            ))}
-                        </div>
+                        <>
+                            <div className="space-y-3">
+                                {currentFeedbackList.map((feedback) => (
+                                    <button
+                                        key={feedback.feedbackId}
+                                        onClick={() => navigate(`/feedback/${feedback.feedbackId}`, { state: { feedback } })}
+                                        className="block w-full text-left"
+                                    >
+                                        <FeedbackListCard
+                                            feedback={{
+                                                exercise: `${exerciseIdNameMap[feedback.exerciseId] || "알 수 없는 운동"} (${getLevelLabel(feedback.level)})`,
+                                                date: feedback.performedDate,
+                                                status: feedback.videoUrl === null ? "pending" : "done",
+                                                accuracy: feedback.accuracy,
+                                                movementRange: feedback.movementRange,
+                                                movementSpeed: feedback.movementSpeed,
+                                            }}
+                                        />
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* 페이지네이션 UI */}
+                            {totalPages > 1 && (
+                                <div className="mt-6 flex items-center justify-center gap-2">
+                                    <button
+                                        onClick={() => handlePageChange(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                        className={`rounded-lg p-2 transition ${
+                                            currentPage === 1
+                                                ? "cursor-not-allowed text-gray-500"
+                                                : "text-white hover:bg-white/10"
+                                        }`}
+                                        aria-label="이전 페이지"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                    </button>
+
+                                    <div className="flex gap-1">
+                                        {[...Array(totalPages)].map((_, index) => {
+                                            const pageNumber = index + 1;
+                                            // 현재 페이지 주변만 표시 (1, 현재-1, 현재, 현재+1, 마지막)
+                                            const showPage =
+                                                pageNumber === 1 ||
+                                                pageNumber === totalPages ||
+                                                Math.abs(pageNumber - currentPage) <= 1;
+
+                                            if (!showPage) {
+                                                // ... 표시
+                                                if (pageNumber === currentPage - 2 || pageNumber === currentPage + 2) {
+                                                    return (
+                                                        <span key={pageNumber} className="px-2 text-gray-400">
+                                                            ...
+                                                        </span>
+                                                    );
+                                                }
+                                                return null;
+                                            }
+
+                                            return (
+                                                <button
+                                                    key={pageNumber}
+                                                    onClick={() => handlePageChange(pageNumber)}
+                                                    className={`min-w-[2.5rem] rounded-lg px-3 py-2 text-sm font-medium transition ${
+                                                        currentPage === pageNumber
+                                                            ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg"
+                                                            : "text-gray-300 hover:bg-white/10"
+                                                    }`}
+                                                >
+                                                    {pageNumber}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+
+                                    <button
+                                        onClick={() => handlePageChange(currentPage + 1)}
+                                        disabled={currentPage === totalPages}
+                                        className={`rounded-lg p-2 transition ${
+                                            currentPage === totalPages
+                                                ? "cursor-not-allowed text-gray-500"
+                                                : "text-white hover:bg-white/10"
+                                        }`}
+                                        aria-label="다음 페이지"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
             </div>
