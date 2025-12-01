@@ -49,7 +49,7 @@ export default function FeedbackListCard({ feedback }) {
                     <p className="mt-1 text-base font-semibold text-purple-200">{rangeText}</p>
                 </div>
                 <div className="rounded-xl border border-white/10 bg-black/20 px-2 py-3">
-                    <p className="text-gray-300">수축/이완</p>
+                    <p className="text-gray-300">리듬</p>
                     {status === "done" && contraction != null && relaxation != null ? (
                         <p className="mt-1 text-[13px] font-semibold text-purple-200">
                             수축 {contraction}%

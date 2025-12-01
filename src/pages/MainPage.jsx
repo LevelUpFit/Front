@@ -1,61 +1,48 @@
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import { useEffect, useState } from "react";
-import { getRoutine, getRoutineById } from "../api/routine";
-import useUserStore from "../stores/userStore";
-import armImg from "../assets/arm.png";
+import chestImg from "../assets/chest.png";
+import backImg from "../assets/back.png";
+import legImg from "../assets/leg.png";
+import shoulderImg from "../assets/shoulder.png";
 
-const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
+const partData = {
+    chest: {
+        label: "가슴 운동",
+        image: chestImg,
+        exercises: ["인클라인 벤치프레스", "벤치프레스", "체스트 플라이", "딥스"]
+    },
+    back: {
+        label: "등 운동",
+        image: backImg,
+        exercises: ["랫풀다운", "데드리프트", "시티드 로우", "바벨 로우"]
+    },
+    leg: {
+        label: "하체 운동",
+        image: legImg,
+        exercises: ["스쿼트", "레그 프레스", "런지", "레그 익스텐션"]
+    },
+    shoulder: {
+        label: "어깨 운동",
+        image: shoulderImg,
+        exercises: ["숄더 프레스", "사이드 레터럴 레이즈", "프론트 레이즈", "벤트오버 레터럴 레이즈"]
+    },
+};
 
 export default function MainPage() {
     const navigate = useNavigate();
-    const { getUserId } = useUserStore();
-    const [randomRoutine, setRandomRoutine] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [part, setPart] = useState("chest");
 
     useEffect(() => {
-        const fetchRandomRoutine = async () => {
-            try {
-                setLoading(true);
-                const userId = getUserId();
-                
-                // 전체 루틴과 사용자 루틴 병합
-                const [resAll, resUser] = await Promise.all([
-                    getRoutine(),
-                    userId ? getRoutineById(userId) : Promise.resolve({ data: { success: true, data: [] } })
-                ]);
-                
-                const allRoutines = resAll.data?.success ? resAll.data.data : [];
-                const userRoutines = resUser.data?.success ? resUser.data.data : [];
-                
-                // userId가 null이거나 로그인한 userId와 같은 루틴만 필터링
-                const publicRoutines = allRoutines.filter(routine => 
-                    routine.userId === null || routine.userId === userId
-                );
-                
-                // 중복 제거 (사용자 루틴 우선)
-                const mergedRoutines = [...userRoutines];
-                publicRoutines.forEach(routine => {
-                    if (!mergedRoutines.some(r => r.routineId === routine.routineId)) {
-                        mergedRoutines.push(routine);
-                    }
-                });
-                
-                if (mergedRoutines.length > 0) {
-                    const randomIndex = Math.floor(Math.random() * mergedRoutines.length);
-                    setRandomRoutine(mergedRoutines[randomIndex]);
-                }
-            } catch (error) {
-                console.error("루틴 조회 실패:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchRandomRoutine();
-    }, [getUserId]);
+        const keys = Object.keys(partData);
+        const randomKey = keys[Math.floor(Math.random() * keys.length)];
+        setPart(randomKey);
+    }, []);
+
+    const { label, image, exercises } = partData[part];
 
     const handleShowAlert = () => {
-        navigate("/workout");
+        alert("전체 운동 보기 기능 준비 중");
     };
 
     return (
@@ -64,7 +51,7 @@ export default function MainPage() {
                 {/* video 평가하기 카드 (핵심 기능이므로 상단에 배치) */}
                 <div 
                     className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-2xl flex items-center space-x-4 transition transform hover:scale-[1.02] hover:border-purple-400 cursor-pointer"
-                    onClick={() => navigate("/feedback")}
+                    onClick={() => navigate("/video-guide")}
                 >
                     <div className="flex-shrink-0 bg-gradient-to-r from-purple-600 to-indigo-600 p-4 rounded-xl shadow-lg">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -77,74 +64,33 @@ export default function MainPage() {
                     </div>
                 </div>
 
-                {/* 랜덤 운동 루틴 카드 */}
-                {loading ? (
-                    <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-6 border border-white/20 overflow-hidden">
-                        <div className="flex items-center justify-center min-h-[200px]">
-                            <p className="text-gray-300">로딩 중...</p>
+                {/* 랜덤 운동 부위 카드 */}
+                <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-6 border border-white/20 overflow-hidden">
+                    <div className="flex justify-between items-start mb-4">
+                        <div>
+                            <p className="text-sm text-purple-300 font-semibold">오늘의 추천 운동</p>
+                            <h2 className="text-2xl font-bold">{label}</h2>
                         </div>
+                        <button
+                            onClick={handleShowAlert}
+                            className="text-sm text-purple-300 hover:text-white font-semibold"
+                        >
+                            전체 보기
+                        </button>
                     </div>
-                ) : randomRoutine ? (
-                    <div 
-                        className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-6 border border-white/20 overflow-hidden cursor-pointer transition hover:border-purple-400"
-                        onClick={() => navigate(`/workout/info/${randomRoutine.routineId}`)}
-                    >
-                        <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <p className="text-sm text-purple-300 font-semibold">오늘의 추천 루틴</p>
-                                <h2 className="text-2xl font-bold">{randomRoutine.name}</h2>
-                            </div>
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleShowAlert();
-                                }}
-                                className="text-sm text-purple-300 hover:text-white font-semibold"
-                            >
-                                전체 보기
-                            </button>
-                        </div>
-                        
-                        <div className="flex justify-between items-end">
-                            <div>
-                                <p className="text-base font-medium text-gray-300 mb-2">
-                                    <span className="text-purple-400">타겟:</span> {randomRoutine.targetMuscle}
-                                </p>
-                                <p className="text-sm text-gray-400">
-                                    {randomRoutine.description || "루틴을 클릭하여 자세히 확인하세요"}
-                                </p>
-                            </div>
-                            <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/10">
-                                {randomRoutine.thumbnailUrl ? (
-                                    <img
-                                        src={IMAGE_BASE_URL + randomRoutine.thumbnailUrl}
-                                        alt="thumb"
-                                        className="h-full w-full object-cover"
-                                    />
-                                ) : (
-                                    <img
-                                        src={armImg}
-                                        alt="default"
-                                        className="h-16 w-16 object-contain opacity-60"
-                                    />
-                                )}
-                            </div>
-                        </div>
+                    
+                    <div className="flex justify-between items-end">
+                        <ul className="text-base font-medium leading-7 space-y-1">
+                            {exercises.slice(0, 4).map((ex, idx) => (
+                                <li key={idx} className="flex items-center">
+                                    <span className="text-purple-400 mr-2">✓</span>
+                                    <span>{ex}</span>
+                                </li>
+                            ))}
+                        </ul>
+                        <img src={image} alt={part} className="w-24 h-24 object-cover flex-shrink-0" />
                     </div>
-                ) : (
-                    <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-6 border border-white/20 overflow-hidden">
-                        <div className="flex flex-col items-center justify-center min-h-[200px] text-center">
-                            <p className="text-lg font-semibold text-white mb-2">등록된 루틴이 없습니다</p>
-                            <p className="text-sm text-gray-300 mb-4">새로운 루틴을 만들어보세요!</p>
-                            <button
-                                onClick={() => navigate("/routine")}
-                                className="rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-2 text-sm font-bold text-white shadow-lg transition-transform duration-300 hover:scale-105"
-                            >
-                                루틴 만들기
-                            </button>
-                        </div>
-                    </div>
-                )}
+                </div>
             </div>
         </Layout>
     );
