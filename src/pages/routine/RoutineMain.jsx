@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Layout from "../../components/Layout";
 import armImg from "../../assets/arm.png";
-import { getRoutineById, deleteRoutine } from "../../api/routine";
+import { getRoutine, getRoutineById, deleteRoutine } from "../../api/routine";
 import useUserStore from "../../stores/userStore";
 
 const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
@@ -66,12 +66,29 @@ export default function RoutineMain() {
     const fetchRoutines = async () => {
         const userId = getUserId();
         try {
-            const res = await getRoutineById(userId);
-            if (res.data && res.data.success) {
-                setRoutines(res.data.data || []);
-            } else {
-                setRoutines([]);
-            }
+            // 전체 루틴과 사용자 루틴 병합
+            const [resAll, resUser] = await Promise.all([
+                getRoutine(),
+                userId ? getRoutineById(userId) : Promise.resolve({ data: { success: true, data: [] } })
+            ]);
+            
+            const allRoutines = resAll.data?.success ? resAll.data.data : [];
+            const userRoutines = resUser.data?.success ? resUser.data.data : [];
+            
+            // userId가 null이거나 로그인한 userId와 같은 루틴만 필터링
+            const publicRoutines = allRoutines.filter(routine => 
+                routine.userId === null || routine.userId === userId
+            );
+            
+            // 중복 제거 (사용자 루틴 우선)
+            const mergedRoutines = [...userRoutines];
+            publicRoutines.forEach(routine => {
+                if (!mergedRoutines.some(r => r.routineId === routine.routineId)) {
+                    mergedRoutines.push(routine);
+                }
+            });
+            
+            setRoutines(mergedRoutines);
         } catch {
             setRoutines([]);
         } finally {
