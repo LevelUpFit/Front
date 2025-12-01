@@ -15,12 +15,12 @@ export default function Layout({ children }) {
                     <img
                         src={logo}
                         alt="LevelUpFit"
-                        className="h-8 w-auto object-contain"
+                        className="h-7 w-auto object-contain"
                     />
                 </button>
                 <div className="flex items-center space-x-3">
                     <h1 className="text-sm font-medium">
-                        안녕하세요, <span className="text-purple-400 font-bold">{user?.name || "사용자"}님!</span>
+                        안녕하세요, <span className="text-purple-400 font-bold">{user?.nickname || "사용자"}님!</span>
                     </h1>
                     <button 
                         onClick={() => navigate("/account")}
