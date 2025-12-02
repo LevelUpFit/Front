@@ -1,0 +1,16 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="115" fill="url(#gradient)"/>
+  <defs>
+    <linearGradient id="gradient" x1="0" y1="0" x2="512" y2="512">
+      <stop offset="0%" stop-color="#9333ea"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(128, 128)">
+    <path d="M128 32 L128 224 M64 80 L192 80 M64 176 L192 176" 
+          stroke="white" stroke-width="24" stroke-linecap="round"/>
+    <circle cx="128" cy="256" r="16" fill="white"/>
+  </g>
+  <text x="256" y="380" text-anchor="middle" font-family="Arial, sans-serif" 
+        font-size="120" font-weight="bold" fill="white">L</text>
+</svg>
