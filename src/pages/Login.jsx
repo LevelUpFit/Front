@@ -133,7 +133,7 @@ export default function Login() {
                 <div className="mt-8 text-center text-sm text-gray-300">
                     <p>
                         아직 계정이 없으신가요?
-                        <a href="#" className="font-medium text-purple-400 hover:text-purple-300 ml-2">
+                        <a href="/signup" className="font-medium text-purple-400 hover:text-purple-300 ml-2">
                             회원가입
                         </a>
                     </p>
