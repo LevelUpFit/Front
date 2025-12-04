@@ -41,57 +41,72 @@ export default function AddWorkoutModal({ date, onClose, onSave, initialData }) 
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 px-4">
             <form
                 onSubmit={handleSubmit}
-                className="bg-white rounded-xl shadow-lg p-6 w-full max-w-xs flex flex-col gap-3"
+                className="bg-gray-900 rounded-2xl shadow-2xl p-6 w-full max-w-sm flex flex-col gap-4 border border-white/20"
             >
-                <h2 className="font-bold text-lg mb-2">{initialData ? "운동 수정" : "운동 추가"} - {date}</h2>
-                <div>
-                    <label className="block text-sm mb-1">날짜</label>
-                    <input
-                        type="text"
-                        value={date}
-                        readOnly
-                        className="w-full border rounded px-2 py-1 bg-gray-100"
-                    />
+                <div className="flex items-center justify-between mb-2">
+                    <h2 className="font-bold text-xl text-white">
+                        {initialData ? "운동 수정" : "운동 추가"}
+                    </h2>
+                    <button 
+                        type="button"
+                        onClick={onClose} 
+                        className="text-2xl text-gray-400 hover:text-white transition"
+                    >
+                        ×
+                    </button>
                 </div>
+                
+                <div className="text-sm text-purple-300 mb-2">📅 {date}</div>
+                
                 <div>
-                    <label className="block text-sm mb-1">운동 이름</label>
+                    <label className="block text-sm text-gray-300 mb-2">운동 이름</label>
                     <input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         required
-                        className="w-full border rounded px-2 py-1"
-                        placeholder="운동 목록(쉼표로 구분, 예: 스쿼트, 벤치프레스, 데드리프트)"
+                        className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 transition"
+                        placeholder="예: 스쿼트, 벤치프레스, 데드리프트"
                     />
                 </div>
+                
                 <div>
-                    <label className="block text-sm mb-1">타겟 근육</label>
+                    <label className="block text-sm text-gray-300 mb-2">타겟 근육</label>
                     <input
                         type="text"
                         value={targetMuscle}
                         onChange={(e) => setTargetMuscle(e.target.value)}
                         required
-                        className="w-full border rounded px-2 py-1"
-                        placeholder="예: 하체, 등, 가슴 등"
+                        className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 transition"
+                        placeholder="예: 하체, 등, 가슴"
                     />
                 </div>
+                
                 <div>
-                    <label className="block text-sm mb-1">피드백</label>
+                    <label className="block text-sm text-gray-300 mb-2">메모</label>
                     <textarea
                         value={feedback}
                         onChange={(e) => setFeedback(e.target.value)}
-                        className="w-full border rounded px-2 py-1"
-                        placeholder="운동 후 느낀 점이나 기록을 입력하세요"
+                        className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 transition resize-none h-24"
+                        placeholder="운동 후 느낌 점이나 기록을 입력하세요"
                     />
                 </div>
-                <div className="flex gap-2 mt-2">
-                    <button type="submit" className="flex-1 bg-blue-600 text-white rounded py-2 font-bold">
+                
+                <div className="flex gap-3 mt-2">
+                    <button 
+                        type="submit" 
+                        className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl py-3 font-bold shadow-lg hover:scale-[1.02] transition transform"
+                    >
                         저장
                     </button>
-                    <button type="button" className="flex-1 bg-gray-300 rounded py-2 font-bold" onClick={onClose}>
+                    <button 
+                        type="button" 
+                        className="flex-1 bg-white/10 border border-white/20 text-gray-300 rounded-xl py-3 font-bold hover:bg-white/20 transition" 
+                        onClick={onClose}
+                    >
                         취소
                     </button>
                 </div>
