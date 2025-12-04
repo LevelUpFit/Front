@@ -3,6 +3,7 @@ import useUserStore from "../stores/userStore";
 import Calendar from "../components/Calendar";
 import FeedbackCard from "../components/FeedbackCard";
 import AddWorkoutModal from "../components/AddWorkoutModal";
+import WorkoutDetailModal from "../components/WorkoutDetailModal";
 import Layout from "../components/Layout";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getUserLogsByDate, getUserLogDetailByDate, deleteRoutineLog, deleteExerciseLog } from "../api/userlog";
@@ -39,6 +40,7 @@ export default function MyPage() {
     const [feedback, setFeedback] = useState("노오력이 부족");
     const [showExerciseModal, setShowExerciseModal] = useState(false);
     const [editExerciseData, setEditExerciseData] = useState(null); // 수정용 데이터
+    const [selectedLogInfo, setSelectedLogInfo] = useState(null); // 상세 보기 모달용 { logId, logType }
 
     const dateKey = getKoreaDateKey(selectedDate);
 
@@ -256,14 +258,12 @@ export default function MyPage() {
                 {Array.isArray(workoutData) && workoutData.length > 0 && (
                     <div className="space-y-3">
                         <h3 className="font-bold text-xl mb-3 text-purple-300">운동 기록</h3>
-                        {workoutData.map((log, idx) => (
-                            <div key={idx} className="bg-white/10 backdrop-blur-lg rounded-xl shadow-xl p-4 border border-white/20 relative hover:border-purple-400 transition">
-                                <button
-                                    className="absolute top-3 right-3 text-red-400 hover:text-red-300 font-bold text-sm"
-                                    onClick={() => handleDeleteLog(log, idx)}
-                                >
-                                    ✕
-                                </button>
+                        {[...workoutData].sort((a, b) => b.id - a.id).map((log, idx) => (
+                            <div 
+                                key={idx} 
+                                className="bg-white/10 backdrop-blur-lg rounded-xl shadow-xl p-4 border border-white/20 relative hover:border-purple-400 transition cursor-pointer"
+                                onClick={() => setSelectedLogInfo({ logId: log.id, logType: log.log_type })}
+                            >
                                 <div className="font-bold text-lg mb-2">{log.name}</div>
                                 <div className="flex items-center gap-2 mb-1">
                                     <span className={`text-xs px-2 py-1 rounded-full ${
@@ -285,6 +285,22 @@ export default function MyPage() {
                             </div>
                         ))}
                     </div>
+                )}
+
+                {/* 운동 기록 상세 모달 */}
+                {selectedLogInfo && (
+                    <WorkoutDetailModal
+                        logId={selectedLogInfo.logId}
+                        logType={selectedLogInfo.logType}
+                        onClose={() => setSelectedLogInfo(null)}
+                        onDelete={(log) => {
+                            setSelectedLogInfo(null);
+                            const idx = workoutData.findIndex(w => w.id === log.id);
+                            if (idx !== -1) {
+                                handleDeleteLog(log, idx);
+                            }
+                        }}
+                    />
                 )}
             </div>
         </Layout>
