@@ -27,7 +27,8 @@ export default function KakaoCallback() {
                 navigate("/main");
             } catch (error) {
                 console.error("카카오 로그인 실패:", error);
-                alert("로그인 실패! 다시 시도해주세요.");
+                console.error("에러 응답:", error.response?.data);
+                alert(`로그인 실패: ${error.response?.data?.message || error.message}`);
                 navigate("/");
             }
         };
