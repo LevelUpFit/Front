@@ -29,7 +29,7 @@ const ConfirmModal = ({ isOpen, message, onConfirm, onCancel, isDestructive }) =
 };
 
 export default function AccountPage() {
-    const { user, logout, deleteAccount } = useUserStore();
+    const { user, clearUser } = useUserStore();
     const navigate = useNavigate();
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -82,7 +82,7 @@ export default function AccountPage() {
                         {/* 로그아웃 */}
                         <button
                             onClick={() => {
-                                logout();
+                                clearUser();
                                 navigate("/login");
                             }}
                             className="w-full flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 transition-all group backdrop-blur-md"
@@ -124,8 +124,9 @@ export default function AccountPage() {
                 message="정말 탈퇴하시겠습니까? 계정 정보와 모든 운동 기록이 삭제됩니다."
                 onCancel={() => setShowDeleteModal(false)}
                 onConfirm={() => {
-                    deleteAccount();
-                    navigate("/");
+                    // TODO: 실제 회원 탈퇴 API 호출 필요
+                    clearUser();
+                    navigate("/login");
                 }}
                 isDestructive={true}
             />
