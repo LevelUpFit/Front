@@ -82,7 +82,20 @@ export default function WorkoutList() {
             ]);
             const all = resAll.data.success ? resAll.data.data : [];
             const mine = resMy.data.success ? resMy.data.data : [];
-            const merged = [...all, ...mine.filter((m) => !all.some((a) => a.routineId === m.routineId))];
+            
+            // userId가 null(기본 루틴) 또는 현재 사용자의 루틴만 필터링
+            const filteredAll = all.filter(routine => 
+                routine.userId === null || routine.userId === userId
+            );
+            
+            // 중복 제거 (사용자 루틴 우선)
+            const merged = [...mine];
+            filteredAll.forEach(routine => {
+                if (!merged.some(m => m.routineId === routine.routineId)) {
+                    merged.push(routine);
+                }
+            });
+            
             setPlans(merged);
         } catch (err) {
             console.error("전체+내 루틴 에러:", err);

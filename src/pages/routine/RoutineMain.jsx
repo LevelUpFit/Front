@@ -62,34 +62,17 @@ export default function RoutineMain() {
     const [popupId, setPopupId] = useState(null); // 팝업 표시용
     const { getUserId } = useUserStore();
     const [modal, setModal] = useState({ isOpen: false });
-    const [hidePublicRoutines, setHidePublicRoutines] = useState(false);
 
     const fetchRoutines = async () => {
         const userId = getUserId();
         try {
-            // 전체 루틴과 사용자 루틴 병합
-            const [resAll, resUser] = await Promise.all([
-                getRoutine(),
-                userId ? getRoutineById(userId) : Promise.resolve({ data: { success: true, data: [] } })
-            ]);
+            // 사용자 루틴만 조회
+            const resUser = userId 
+                ? await getRoutineById(userId) 
+                : { data: { success: true, data: [] } };
             
-            const allRoutines = resAll.data?.success ? resAll.data.data : [];
             const userRoutines = resUser.data?.success ? resUser.data.data : [];
-            
-            // userId가 null이거나 로그인한 userId와 같은 루틴만 필터링
-            const publicRoutines = allRoutines.filter(routine => 
-                routine.userId === null || routine.userId === userId
-            );
-            
-            // 중복 제거 (사용자 루틴 우선)
-            const mergedRoutines = [...userRoutines];
-            publicRoutines.forEach(routine => {
-                if (!mergedRoutines.some(r => r.routineId === routine.routineId)) {
-                    mergedRoutines.push(routine);
-                }
-            });
-            
-            setRoutines(mergedRoutines);
+            setRoutines(userRoutines);
         } catch {
             setRoutines([]);
         } finally {
@@ -171,21 +154,6 @@ export default function RoutineMain() {
                         나만의 루틴으로 다음 운동을 준비해 보세요.
                     </p>
                 </div>
-                <div className="flex items-center gap-2">
-                    <input
-                        type="checkbox"
-                        id="hidePublic"
-                        checked={hidePublicRoutines}
-                        onChange={(e) => setHidePublicRoutines(e.target.checked)}
-                        className="h-4 w-4 cursor-pointer rounded border-white/20 bg-white/10 text-purple-600 focus:ring-2 focus:ring-purple-500"
-                    />
-                    <label
-                        htmlFor="hidePublic"
-                        className="cursor-pointer text-sm text-gray-300 select-none"
-                    >
-                        기본 루틴 숨기기
-                    </label>
-                </div>
                 {(!routines || routines.length === 0) ? (
                     <div className="flex flex-col items-center justify-center rounded-2xl border border-white/20 bg-white/10 p-6 text-center shadow-2xl backdrop-blur-lg">
                         <img src={armImg} alt="muscle" className="h-24 w-24 opacity-80" />
@@ -205,25 +173,8 @@ export default function RoutineMain() {
                         <div className="grid gap-4">
                             {routines
                                 .slice()
-                                .filter((routine) => {
-                                    if (hidePublicRoutines) {
-                                        // 기본 루틴 숨기기 체크 시 userId가 있는 것만
-                                        return routine.userId !== null;
-                                    }
-                                    return true;
-                                })
-                                .sort((a, b) => {
-                                    const currentUserId = getUserId();
-                                    // 사용자가 만든 루틴을 먼저 정렬
-                                    const aIsUser = a.userId === currentUserId;
-                                    const bIsUser = b.userId === currentUserId;
-                                    if (aIsUser && !bIsUser) return -1;
-                                    if (!aIsUser && bIsUser) return 1;
-                                    // 같은 타입 내에서는 exerciseOrder로 정렬
-                                    return (a.exerciseOrder || 0) - (b.exerciseOrder || 0);
-                                })
+                                .sort((a, b) => (a.exerciseOrder || 0) - (b.exerciseOrder || 0))
                                 .map((routine) => {
-                                    const isPublic = routine.userId === null;
                                     return (
                                     <div
                                         key={routine.routineId}
@@ -251,7 +202,6 @@ export default function RoutineMain() {
                                                 <div className="mt-1 text-sm text-purple-200 truncate">{routine.targetMuscle}</div>
                                             </div>
                                         </div>
-                                        {!isPublic && (
                                         <button
                                             className="routine-popup-btn flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full transition hover:bg-white/20"
                                             onClick={(e) => {
@@ -265,7 +215,6 @@ export default function RoutineMain() {
                                                 <circle cx="19" cy="12" r="2" fill="#FFFFFF" />
                                             </svg>
                                         </button>
-                                        )}
                                         {popupId === routine.routineId && (
                                             <div className="routine-popup absolute right-4 top-14 z-20 w-32 overflow-hidden rounded-xl border border-white/20 bg-gray-900/90 py-2 shadow-lg backdrop-blur-lg">
                                                 <button
