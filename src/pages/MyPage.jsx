@@ -4,7 +4,7 @@ import Calendar from "../components/Calendar";
 import FeedbackCard from "../components/FeedbackCard";
 import AddWorkoutModal from "../components/AddWorkoutModal";
 import Layout from "../components/Layout";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { getUserLogsByDate, getUserLogDetailByDate, deleteRoutineLog, deleteExerciseLog } from "../api/userlog";
 import { saveExerciseLog } from "../api/exercise";
 import { SwipeableList, SwipeableListItem } from "react-swipeable-list";
@@ -21,7 +21,15 @@ function getKoreaDateKey(date) {
 
 export default function MyPage() {
     const { getUserId } = useUserStore();
-    const [selectedDate, setSelectedDate] = useState(new Date());
+    const navigate = useNavigate();
+    const location = useLocation();
+    
+    // MainPage에서 전달받은 날짜가 있으면 사용, 없으면 오늘 날짜
+    const [selectedDate, setSelectedDate] = useState(() => {
+        return location.state?.selectedDate 
+            ? new Date(location.state.selectedDate) 
+            : new Date();
+    });
     const [showAddModal, setShowAddModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [workoutDates, setWorkoutDates] = useState([]);
@@ -31,7 +39,6 @@ export default function MyPage() {
     const [feedback, setFeedback] = useState("노오력이 부족");
     const [showExerciseModal, setShowExerciseModal] = useState(false);
     const [editExerciseData, setEditExerciseData] = useState(null); // 수정용 데이터
-    const navigate = useNavigate();
 
     const dateKey = getKoreaDateKey(selectedDate);
 
@@ -51,7 +58,30 @@ export default function MyPage() {
             }
         };
         fetchWorkoutDates();
-    }, [getUserId]);
+        
+        // MainPage에서 전달받은 날짜가 있으면 해당 날짜의 운동 기록도 조회
+        if (location.state?.selectedDate) {
+            const fetchInitialWorkoutData = async () => {
+                const userId = getUserId();
+                const initDate = new Date(location.state.selectedDate);
+                const performedDate = getKoreaDateKey(initDate);
+                console.log("전달받은 날짜:", location.state.selectedDate, "-> performedDate:", performedDate);
+                try {
+                    const res = await getUserLogDetailByDate({ userId, performedDate });
+                    console.log("운동 기록 조회 결과:", res.data);
+                    if (res.data.success) {
+                        setWorkoutData(res.data.data);
+                    } else {
+                        setWorkoutData(null);
+                    }
+                } catch (e) {
+                    console.error("운동 기록 조회 실패:", e);
+                    setWorkoutData(null);
+                }
+            };
+            fetchInitialWorkoutData();
+        }
+    }, []);
 
     const handleSelectDate = async (date) => {
         setSelectedDate(date);
