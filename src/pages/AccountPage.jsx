@@ -83,7 +83,7 @@ export default function AccountPage() {
                         <button
                             onClick={() => {
                                 logout();
-                                navigate("/");
+                                navigate("/login");
                             }}
                             className="w-full flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 transition-all group backdrop-blur-md"
                         >

@@ -1,12 +1,7 @@
 import api from "./api";
 
-export const saveRoutineLog = async (userId, routineId, performedDate) => {
-    const body = {
-        userId,
-        routineId,
-        performedDate
-    };
-    return api.post('/routines-log/save', body);
+export const saveRoutineLog = async (logData) => {
+    return api.post('/routines-log/save', logData);
 };
 
 // 한국 시간 기준으로 userId, year, month를 GET 파라미터로 조회
@@ -40,5 +35,12 @@ export const deleteExerciseLog = async (exerciseLogId) => {
 export const deleteRoutineLog = async (logId) => {
     return api.delete('/routines-log', {
         data: { logId }
+    });
+};
+
+// 단일 기록 상세 조회
+export const getUserLogDetail = async (logId, logType) => {
+    return api.get(`/user-logs/detail/${logId}`, {
+        params: { logType }
     });
 };
