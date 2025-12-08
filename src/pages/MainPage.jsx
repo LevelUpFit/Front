@@ -2,8 +2,16 @@ import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import { useEffect, useState } from "react";
 import { getRoutine, getRoutineById } from "../api/routine";
+import { getUserLogsByDate } from "../api/userlog";
 import useUserStore from "../stores/userStore";
+import Calendar from "../components/Calendar";
 import armImg from "../assets/arm.png";
+
+// 한국 시간 기준 YYYY-MM-DD 반환 함수
+function getKoreaDateKey(date) {
+    const korea = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+    return korea.toISOString().split("T")[0];
+}
 
 const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
 
@@ -12,6 +20,27 @@ export default function MainPage() {
     const { getUserId } = useUserStore();
     const [randomRoutine, setRandomRoutine] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [workoutDates, setWorkoutDates] = useState([]);
+    const [selectedDate, setSelectedDate] = useState(new Date());
+
+    // 운동 기록 날짜 조회
+    useEffect(() => {
+        const fetchWorkoutDates = async () => {
+            try {
+                const userId = getUserId();
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = now.getMonth() + 1;
+                const res = await getUserLogsByDate({ userId, year, month });
+                if (res.data.success) {
+                    setWorkoutDates(res.data.data);
+                }
+            } catch (e) {
+                setWorkoutDates([]);
+            }
+        };
+        fetchWorkoutDates();
+    }, []);
 
     useEffect(() => {
         const fetchRandomRoutine = async () => {
@@ -52,7 +81,7 @@ export default function MainPage() {
             }
         };
         fetchRandomRoutine();
-    }, [getUserId]);
+    }, []);
 
     const handleShowAlert = () => {
         navigate("/workout");
@@ -145,6 +174,25 @@ export default function MainPage() {
                         </div>
                     </div>
                 )}
+                {/* 운동 기록 캘린더 */}
+                <div 
+                    className="bg-white/10 backdrop-blur-lg p-5 rounded-2xl border border-white/20 shadow-2xl hover:border-purple-400 transition"
+                >
+                    <h3 
+                        className="text-lg font-bold text-purple-300 mb-3 cursor-pointer"
+                        onClick={() => navigate("/my")}
+                    >
+                        📅 이번 달 운동 기록
+                    </h3>
+                    <Calendar
+                        selectedDate={selectedDate}
+                        onSelect={(date) => {
+                            console.log("MainPage 캘린더 날짜 클릭:", date);
+                            navigate("/my", { state: { selectedDate: date.toISOString() } });
+                        }}
+                        workoutDates={workoutDates}
+                    />
+                </div>
             </div>
         </Layout>
     );

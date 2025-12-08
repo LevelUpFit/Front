@@ -67,29 +67,13 @@ export default function RoutineMain() {
     const fetchRoutines = async () => {
         const userId = getUserId();
         try {
-            // 전체 루틴과 사용자 루틴 병합
-            const [resAll, resUser] = await Promise.all([
-                getRoutine(),
-                userId ? getRoutineById(userId) : Promise.resolve({ data: { success: true, data: [] } })
-            ]);
+            // 사용자 루틴만 조회
+            const resUser = userId 
+                ? await getRoutineById(userId) 
+                : { data: { success: true, data: [] } };
             
-            const allRoutines = resAll.data?.success ? resAll.data.data : [];
             const userRoutines = resUser.data?.success ? resUser.data.data : [];
-            
-            // userId가 null이거나 로그인한 userId와 같은 루틴만 필터링
-            const publicRoutines = allRoutines.filter(routine => 
-                routine.userId === null || routine.userId === userId
-            );
-            
-            // 중복 제거 (사용자 루틴 우선)
-            const mergedRoutines = [...userRoutines];
-            publicRoutines.forEach(routine => {
-                if (!mergedRoutines.some(r => r.routineId === routine.routineId)) {
-                    mergedRoutines.push(routine);
-                }
-            });
-            
-            setRoutines(mergedRoutines);
+            setRoutines(userRoutines);
         } catch {
             setRoutines([]);
         } finally {
@@ -205,25 +189,8 @@ export default function RoutineMain() {
                         <div className="grid gap-4">
                             {routines
                                 .slice()
-                                .filter((routine) => {
-                                    if (hidePublicRoutines) {
-                                        // 기본 루틴 숨기기 체크 시 userId가 있는 것만
-                                        return routine.userId !== null;
-                                    }
-                                    return true;
-                                })
-                                .sort((a, b) => {
-                                    const currentUserId = getUserId();
-                                    // 사용자가 만든 루틴을 먼저 정렬
-                                    const aIsUser = a.userId === currentUserId;
-                                    const bIsUser = b.userId === currentUserId;
-                                    if (aIsUser && !bIsUser) return -1;
-                                    if (!aIsUser && bIsUser) return 1;
-                                    // 같은 타입 내에서는 exerciseOrder로 정렬
-                                    return (a.exerciseOrder || 0) - (b.exerciseOrder || 0);
-                                })
+                                .sort((a, b) => (a.exerciseOrder || 0) - (b.exerciseOrder || 0))
                                 .map((routine) => {
-                                    const isPublic = routine.userId === null;
                                     return (
                                     <div
                                         key={routine.routineId}

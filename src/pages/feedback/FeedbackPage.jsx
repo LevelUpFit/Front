@@ -47,6 +47,8 @@ export default function FeedbackPage() {
 
     // 피드백 리스트 상태
     const [feedbackList, setFeedbackList] = useState([]);
+    const [currentPage, setCurrentPage] = useState(0);
+    const itemsPerPage = 4;
 
     // 운동별 가이드 GIF 매핑
     const exerciseGuideMap = {
@@ -202,6 +204,13 @@ export default function FeedbackPage() {
         };
     }, [videoUrl]);
 
+    // 페이지네이션 계산
+    const totalPages = Math.ceil(feedbackList.length / itemsPerPage);
+    const paginatedFeedback = feedbackList.slice(
+        currentPage * itemsPerPage,
+        (currentPage + 1) * itemsPerPage
+    );
+
     // 운동이 선택될 때마다 id도 자동 저장
     useEffect(() => {
         if (!selectedExercise || !exerciseOptions.length) {
@@ -320,7 +329,7 @@ export default function FeedbackPage() {
                         </div>
                     ) : (
                         <div className="space-y-3">
-                            {feedbackList.map((feedback) => (
+                            {paginatedFeedback.map((feedback) => (
                                 <button
                                     key={feedback.feedbackId}
                                     onClick={() => navigate(`/feedback/${feedback.feedbackId}`, { state: { feedback } })}
@@ -338,6 +347,35 @@ export default function FeedbackPage() {
                                     />
                                 </button>
                             ))}
+                            {totalPages > 1 && (
+                                <div className="flex items-center justify-center gap-2 pt-3">
+                                    <button
+                                        onClick={() => setCurrentPage((prev) => Math.max(0, prev - 1))}
+                                        disabled={currentPage === 0}
+                                        className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
+                                            currentPage === 0
+                                                ? "cursor-not-allowed text-gray-500"
+                                                : "bg-white/10 text-white hover:bg-white/20"
+                                        }`}
+                                    >
+                                        ◂
+                                    </button>
+                                    <span className="text-sm text-gray-300">
+                                        {currentPage + 1} / {totalPages}
+                                    </span>
+                                    <button
+                                        onClick={() => setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1))}
+                                        disabled={currentPage === totalPages - 1}
+                                        className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
+                                            currentPage === totalPages - 1
+                                                ? "cursor-not-allowed text-gray-500"
+                                                : "bg-white/10 text-white hover:bg-white/20"
+                                        }`}
+                                    >
+                                        ▸
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

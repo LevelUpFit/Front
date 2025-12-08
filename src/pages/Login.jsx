@@ -29,7 +29,7 @@ export default function Login() {
         try {
             const res = await login(email, password);
             setUser(res.data.data);
-            console.log("로그인 성공!");
+            // console.log("로그인 성공!");
             navigate("/main");
         } catch (err) {
             console.error("로그인 실패:", err);

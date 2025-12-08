@@ -158,23 +158,23 @@ export default function FeedbackDetailPage() {
             >
                 <div className="relative w-full max-w-md flex-1">
                     <div className={`${cardBase} ${cardState(0)}`}>
-                        <div className="flex-1 space-y-5">
+                        <div className="flex min-h-0 flex-1 flex-col space-y-5">
                             <div className="text-center">
                                 <p className="text-sm text-purple-200">AI 피드백</p>
                                 <h2 className="mt-1 text-2xl font-bold text-white">{exerciseName}</h2>
                                 <p className="text-xs text-gray-300">{feedback.performedDate}</p>
                             </div>
-                            <div className="space-y-3">
+                            <div className="flex min-h-0 flex-1 flex-col space-y-3">
                                 <div className="flex justify-between rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
                                     <span className="text-gray-300">정확도</span>
                                     <span className="text-lg font-semibold text-purple-200">{accuracyText}</span>
                                 </div>
-                                <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-gray-200" style={{ whiteSpace: "pre-line" }}>
+                                <div className="min-h-0 flex-1 overflow-y-auto rounded-2xl border border-white/10 bg-black/20 p-4 text-gray-200" style={{ whiteSpace: "pre-line" }}>
                                     {feedback.feedbackText || "피드백이 준비 중입니다."}
                                 </div>
                             </div>
                         </div>
-                        <div className="mt-6 flex flex-col gap-2">
+                        <div className="mt-4 flex flex-shrink-0 flex-col gap-2">
                             <button
                                 onClick={() => setSlideIndex(1)}
                                 className="rounded-xl bg-white/10 py-3 text-sm font-semibold text-white transition hover:bg-white/20"

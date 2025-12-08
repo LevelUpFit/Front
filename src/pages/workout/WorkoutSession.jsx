@@ -141,28 +141,66 @@ export default function WorkoutSession() {
             setCurrentIndex((prevIdx) => prevIdx + 1);
             setCurrentSetIndex(0);
         } else {
-            try {
-                const userId = getUserId();
-                const performedDate = new Date(Date.now() + 9 * 60 * 60 * 1000)
-                    .toISOString()
-                    .slice(0, 10);
-                await saveRoutineLog(userId, routineId, performedDate);
-            } catch (err) {
-                console.error("운동 기록 저장에 실패했습니다.");
-            }
-
+            const endTime = new Date();
+            
+            // 완료된 운동 데이터 정리
             const summaryExercises = exercises.map((exercise, exerciseIdx) => ({
                 ...exerciseDetails[exercise.exerciseId],
                 sets: updatedSets[exerciseIdx].filter((set) => set.done),
             }));
 
+            // 총 볼륨 계산
+            let totalVolume = 0;
+            summaryExercises.forEach((ex) => {
+                ex.sets.forEach((set) => {
+                    totalVolume += (set.weight || 0) * (set.reps || 0);
+                });
+            });
+
+            // 운동 시간 계산 (초 단위)
+            const durationSeconds = Math.floor((endTime - startTime) / 1000);
+
+            // 완료된 총 세트 수
+            const totalSets = summaryExercises.reduce(
+                (acc, ex) => acc + (ex.sets?.length || 0), 
+                0
+            );
+
+            try {
+                const userId = getUserId();
+                const performedDate = new Date(Date.now() + 9 * 60 * 60 * 1000)
+                    .toISOString()
+                    .slice(0, 10);
+                
+                // 확장된 데이터로 저장
+                await saveRoutineLog({
+                    userId,
+                    routineId: Number(routineId),
+                    performedDate,
+                    totalVolume,           // 총 볼륨 (kg)
+                    durationSeconds,       // 운동 시간 (초)
+                    totalSets,             // 총 세트 수
+                    targetMuscle: exerciseDetails[exercises[0]?.exerciseId]?.targetMuscle || null,
+                    exerciseDetails: summaryExercises.map((ex) => ({
+                        exerciseId: ex.id,
+                        name: ex.name,
+                        sets: ex.sets.map((set) => ({
+                            weight: set.weight,
+                            reps: set.reps,
+                        })),
+                    })),
+                });
+            } catch (err) {
+                console.error("운동 기록 저장에 실패했습니다.", err);
+            }
+
             navigate("/workout/summary", {
                 state: {
                     exercises: summaryExercises,
                     startTime,
-                    endTime: new Date(),
+                    endTime,
                     muscle:
-                        exerciseDetails[exercises[0].exerciseId]?.targetMuscle || "운동",
+                        exerciseDetails[exercises[0]?.exerciseId]?.targetMuscle || "운동",
                 },
             });
         }
