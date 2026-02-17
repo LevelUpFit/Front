@@ -19,7 +19,7 @@ export default function Welcome() {
     }
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen space-y-6 px-4">
+        <div className="flex flex-col items-center justify-center h-screen space-y-6 px-4 bg-gradient-to-br from-gray-900 via-indigo-900 to-purple-900 text-white">
             <img
                 src={logo}
                 alt="LevelUpFit"
