@@ -218,7 +218,7 @@ export default function RoutineMain() {
                                                 <div className="mt-1 text-sm text-purple-200 truncate">{routine.targetMuscle}</div>
                                             </div>
                                         </div>
-                                        {!isPublic && (
+                                        {!routine.isPublic && (
                                         <button
                                             className="routine-popup-btn flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full transition hover:bg-white/20"
                                             onClick={(e) => {
